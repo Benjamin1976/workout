@@ -1,0 +1,4 @@
+{
+  "mongoURI_local": "mongodb://localhost:27017/gym?readPreference=primary&directConnection=true&ssl=false",
+  "jwtSecret": "Secret"
+}

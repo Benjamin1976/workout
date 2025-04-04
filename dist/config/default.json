@@ -1,0 +1,6 @@
+{
+  "mongoURI_local": "mongodb://localhost:27017/gym?readPreference=primary&directConnection=true&ssl=false",
+  "jwtSecret": "Secret",
+  "MAILGUN_API_KEY": "671abf7f0ba34ba260125a25806f5d9f-360a0b2c-0c84d091",
+  "MAILGUN_DOMAIN": "mg.imaginators.life"
+}

@@ -1,0 +1,7 @@
+{
+  "mongoURI_local": "mongodb+srv://gym:jAp6LOHgxqUYCXTq@cluster-balances.eqcti.mongodb.net/gym?authSource=admin&replicaSet=atlas-2cmpvh-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass%20Community&retryWrites=true&ssl=true",
+  "mongoURI_online": "mongodb+srv://gym:jAp6LOHgxqUYCXTqM@cluster-balances.eqcti.mongodb.net/gym?retryWrites=true&w=majority",
+  "jwtSecret": "febbe41c-8bfb-4652-adc9-5d763d5da600",
+  "MAILGUN_API_KEY": "prod-671abf7f0ba34ba260125a25806f5d9f-360a0b2c-0c84d091",
+  "MAILGUN_DOMAIN": "https://api.eu.mailgun.net/v3/mg.imaginators.life"
+}
