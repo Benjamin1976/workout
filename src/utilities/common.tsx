@@ -348,7 +348,7 @@ export const agoDateString = (dateCompare: DateTime): string => {
   const diff = dateNew.diff(dateCompare, units);
   let agoString: string = "";
 
-  units.forEach((unit) => {
+  units.forEach((unit: any) => {
     const unitValue = diff.get(unit);
     if (!agoString && unitValue >= 1) {
       const unitString =
