@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import axios from "axios";
 
 import { AuthProvider } from "./context/AuthProvider.tsx";
 import { AlertProvider } from "./context/AlertProvider.tsx";
@@ -13,6 +14,8 @@ import Register from "./components/auth/Register.tsx";
 import Validate from "./components/auth/Validate.tsx";
 import Session from "./components/session/Session.tsx";
 import SessionList from "./components/session/SessionList.tsx";
+
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 import "./App..css";
 if (localStorage.token) {
