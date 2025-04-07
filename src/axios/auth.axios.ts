@@ -51,7 +51,7 @@ export const loadUserAxios = async (): Promise<UserType | null> => {
   // try {
   console.log("loadUserAxios: Start");
   const result = await axios
-    .get(`/api/auth/user/load`)
+    .post(`/api/auth/user/load`)
     .then((result) => {
       console.log(result);
       return result;
