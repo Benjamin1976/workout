@@ -6,6 +6,7 @@ import useExercise from "../../hooks/useExercise";
 import { ExerciseItemType, SetItemType } from "../../context/types";
 
 import { getNowTime } from "../../utilities/common";
+import Icon from "./Icon";
 
 type TimerProps = {
   timerDuration: number;
@@ -71,62 +72,109 @@ const Timer = ({ timerDuration = 90, set, setId }: TimerProps) => {
 
   let expiryTimestamp = getExpiryTime(timerDuration);
 
-  const {
-    seconds,
-    minutes,
-    // isRunning,
-    // start,
-    pause,
-    resume,
-    restart,
-  } = useTimer({
+  const { seconds, minutes, pause, resume, restart } = useTimer({
     expiryTimestamp,
     onExpire: () => {
       localStorage.removeItem("expiryTimestamp");
-      console.warn("onExpire called");
+      // console.warn("onExpire called");
     },
   });
 
   return (
     <>
       <Container className="p-1 m-1">
-        <Row>
-          <Col className="text-center">
-            <Button className="btn btn-sm  " onClick={() => startTheSet()}>
+        <Row className="m-0 p-0 align-items-middle">
+          <Col className="col-4 text-end">
+            <Button
+              className="btn btn-sm  h-100 w-100"
+              onClick={() => startTheSet()}
+            >
               Start
             </Button>
           </Col>
-          <Col className="text-center h1">
-            {padTimes(minutes)}:{padTimes(seconds)}
+          <Col className="col-4 text-center m-0 p-0">
+            <Container className="w-100 m-0 p-0">
+              <Row>
+                <Col className="text-center" style={{ fontSize: "2.5rem" }}>
+                  {padTimes(minutes)}:{padTimes(seconds)}
+                </Col>
+              </Row>
+              <Row className="text-center">
+                <Col>
+                  <Button className="btn btn-sm" onClick={() => pause()}>
+                    {/* Pause */}
+                    <Icon icon="pause" />
+                  </Button>
+                  <Button className="btn btn-sm" onClick={() => resume()}>
+                    {/* Resume */}
+                    <Icon icon="play_arrow" />
+                  </Button>
+                  <Button
+                    className="btn btn-sm"
+                    onClick={() => restartTimer(timerDuration)}
+                  >
+                    {/* Restart */}
+                    <Icon icon="refresh" />
+                  </Button>
+                </Col>
+              </Row>
+            </Container>
           </Col>
-          <Col className="text-center">
+          <Col className="col-4 text-center">
             <Button
-              className="btn btn-sm btn-primary"
+              className="btn btn-sm btn-primary h-100 w-100"
               onClick={() => completeTheSet()}
             >
               Finish
             </Button>
           </Col>
         </Row>
-        <Row>
-          <Col className="text-center">
-            <Button className="btn btn-sm" onClick={() => pause()}>
-              Pause
-            </Button>
-            <Button className="btn btn-sm" onClick={() => resume()}>
-              Resume
-            </Button>
-            <Button
-              className="btn btn-sm"
-              onClick={() => restartTimer(timerDuration)}
-            >
-              Restart
-            </Button>
-          </Col>
-        </Row>
       </Container>
     </>
   );
+  // return (
+  //   <>
+  //     <Container className="p-1 m-1">
+  //       <Row>
+  //         <Col className="text-center">
+  //           <Button className="btn btn-sm  " onClick={() => startTheSet()}>
+  //             Start
+  //           </Button>
+  //         </Col>
+  //         <Col className="text-center h1">
+  //           {padTimes(minutes)}:{padTimes(seconds)}
+  //         </Col>
+  //         <Col className="text-center">
+  //           <Button
+  //             className="btn btn-sm btn-primary"
+  //             onClick={() => completeTheSet()}
+  //           >
+  //             Finish
+  //           </Button>
+  //         </Col>
+  //       </Row>
+  //       <Row>
+  //         <Col className="text-center">
+  //           <Button className="btn btn-sm" onClick={() => pause()}>
+  //             {/* Pause */}
+  //             <Icon icon="pause" />
+  //           </Button>
+  //           <Button className="btn btn-sm" onClick={() => resume()}>
+  //             {/* Resume */}
+  //             <Icon icon="play_arrow" />
+  //           </Button>
+  //           <Button
+  //             className="btn btn-sm"
+  //             onClick={() => restartTimer(timerDuration)}
+  //           >
+  //             {/* Restart */}
+  //             <Icon icon="refresh" />
+  //           </Button>
+  //         </Col>
+  //       </Row>
+  //     </Container>
+  //   </>
+  // );
 };
 
 export default Timer;
