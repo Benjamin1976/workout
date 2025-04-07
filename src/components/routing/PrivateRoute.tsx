@@ -9,7 +9,7 @@ const PrivateRoute = () => {
   const location = useLocation();
   let { from } = location.state || { from: { pathname: "/" } };
 
-  if (loading) "Loading...";
+  if (loading) return "Loading...";
   return !isAuthenticated && !loading ? (
     <Navigate to="/login" state={{ from: from }} />
   ) : !isValidated && !loading ? (
