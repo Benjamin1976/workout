@@ -8,6 +8,8 @@ import {
 } from "../context/types";
 import { configJSON } from "../utilities/common";
 
+axios.defaults.baseURL = "https://api.workout.imaginators.life";
+
 export const getSessionsFromDb = async (
   filters: any,
   sort: object,
