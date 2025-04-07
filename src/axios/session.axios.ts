@@ -14,7 +14,7 @@ export const getSessionsFromDb = async (
   start?: number
 ): Promise<SessionListItemType[] | null> => {
   return await axios
-    .get(`/api/sessions`, {
+    .post(`/api/sessions/sessions/get`, {
       params: { filters: filters, sort: sort, start: start },
       // params: { filters: filters, sort: sort, start: start },
     })
@@ -37,7 +37,7 @@ export const getSessionFromDb = async (
   sessionId: string
 ): Promise<SessionItemType | null> => {
   return await axios
-    .get(`/api/sessions/session/${sessionId}`)
+    .post(`/api/sessions/session/get/${sessionId}`)
     .then((res) => {
       if (res?.data) {
         return res.data;
@@ -57,7 +57,7 @@ export const saveSessionsToDb = async (
   sessions: Partial<SessionItemType>[]
 ): Promise<SessionListItemType[] | null> => {
   return await axios
-    .put(`/api/sessions/many`, sessions, configJSON)
+    .post(`/api/sessions/sessions/many/put`, sessions, configJSON)
     .then((res) => {
       return res?.data ? res.data : null;
     })
@@ -71,7 +71,7 @@ export const saveSessionToDb = async (
   session: SessionItemType | Partial<SessionItemType>
 ): Promise<SessionItemType | null> => {
   return await axios
-    .put(`/api/sessions/${session._id}`, session, configJSON)
+    .post(`/api/sessions/session/put/${session._id}`, session, configJSON)
     .then((res) => {
       return res.data;
     })
@@ -85,7 +85,7 @@ export const cloneSessionToDb = async (
   sessionId: string
 ): Promise<SessionItemType | null> => {
   return await axios
-    .post(`/api/sessions/clone`, { sessionId }, configJSON)
+    .post(`/api/sessions/session/clone`, { sessionId }, configJSON)
     .then((res) => {
       return res.data;
     })
@@ -97,7 +97,7 @@ export const cloneSessionToDb = async (
 
 export const getAllExercisesFromDb = async () => {
   return await axios
-    .get(`/api/sessions/exercises`)
+    .post(`/api/sessions/exercises/all/get`)
     .then((res) => {
       if (res?.data) {
         return res.data;
@@ -119,7 +119,7 @@ export const addExerciseNameToDb = async (
   delete exerciseName._id;
 
   return await axios
-    .post(`/api/sessions/exercise/name`, exerciseName, configJSON)
+    .post(`/api/sessions/exercise/name/post`, exerciseName, configJSON)
     .then((res) => {
       if (res?.data && res?.data) {
         return res.data;
@@ -138,8 +138,8 @@ export const saveExerciseToDb = async (
   exercise: ExerciseItemType
 ): Promise<SessionItemType | null> => {
   return await axios
-    .put(
-      `/api/sessions/exercise/${sessionId}/${exercise.id}`,
+    .post(
+      `/api/sessions/exercise/put/${sessionId}/${exercise.id}`,
       exercise,
       configJSON
     )
@@ -159,8 +159,8 @@ export const saveSetToDb = async (
   set: SetItemType
 ): Promise<SessionItemType | null> => {
   return await axios
-    .put(
-      `/api/sessions/set/${sessionId}/${exerciseId}/${setId}`,
+    .post(
+      `/api/sessions/set/put/${sessionId}/${exerciseId}/${setId}`,
       set,
       configJSON
     )
