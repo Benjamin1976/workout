@@ -18,7 +18,7 @@ import {
 
 // import { AxiosResponse } from "axios";
 
-let dbl = 0;
+let dbl = 2;
 let dp = "context.auth";
 
 // Register User
@@ -205,8 +205,8 @@ const loginAxios = async (loginData: LoginType): Promise<TokenType> => {
   return data;
 };
 
-const loadUserAxios = async (from: string): Promise<UserType> => {
-  const { data } = await axios.get<UserType>(`/api/auth/${from}`);
+const loadUserAxios = async (): Promise<UserType> => {
+  const { data } = await axios.get<UserType>(`/api/auth`);
   return data;
 };
 
@@ -247,7 +247,7 @@ const useAuthContext = (initAuthState: AuthStateType) => {
         }
 
         dbMsgLarge(1, dbl, lm + "User Validation result:-", token);
-        loadUser("validateUser");
+        loadUser();
       })
       .catch((err: any) => {
         dispatch({
@@ -302,7 +302,7 @@ const useAuthContext = (initAuthState: AuthStateType) => {
         if (token && localStorage.getItem("token")) {
           // load user and return user details
           dbMsg(1, dbl, lm + "Load User");
-          loadUser("login");
+          loadUser();
         }
       })
       .catch((err: any) => {
@@ -317,10 +317,10 @@ const useAuthContext = (initAuthState: AuthStateType) => {
   };
 
   // Load User
-  const loadUser = async (from: string) => {
+  const loadUser = async () => {
     let lm = dp + ".loadUser: ";
 
-    dbMsg(1, dbl, lm + "Starting from: " + from);
+    dbMsg(1, dbl, lm + "Starting");
 
     const token = localStorage.getItem("token");
     if (token) {
@@ -330,7 +330,7 @@ const useAuthContext = (initAuthState: AuthStateType) => {
 
     // try getting user from auth
     dbMsg(1, dbl, lm + "Getting user data from auth");
-    loadUserAxios(from)
+    loadUserAxios()
       .then((user: UserType) => {
         dbMsgLarge(1, dbl, lm + "User result:-", user ?? "no data returned");
         if (!user) {
@@ -364,7 +364,7 @@ const useAuthContext = (initAuthState: AuthStateType) => {
           payload: tokenData,
         });
 
-        loadUser("register");
+        loadUser();
       })
       .catch((err: any) => {
         // remove token from storage and mark as not authenticated

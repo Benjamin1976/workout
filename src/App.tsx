@@ -18,8 +18,9 @@ import SessionList from "./components/session/SessionList.tsx";
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 import "./App..css";
-if (localStorage.token) {
-  setAuthToken(localStorage.token);
+let token = localStorage.getItem("token");
+if (token !== null) {
+  setAuthToken(token);
 }
 
 const App = () => {

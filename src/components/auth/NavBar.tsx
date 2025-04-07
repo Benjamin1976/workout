@@ -8,7 +8,7 @@ const NavBar = () => {
   const { isAuthenticated, loadUser, logout } = useAuth();
 
   useEffect(() => {
-    loadUser("navbar");
+    loadUser();
     // eslint-disable-next-line
   }, []);
 
