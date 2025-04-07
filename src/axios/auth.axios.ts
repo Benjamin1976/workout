@@ -50,24 +50,31 @@ export const loginAxios = async (loginData: LoginType): Promise<TokenType> => {
 export const loadUserAxios = async (): Promise<UserType | null> => {
   // try {
   console.log("loadUserAxios: Start");
-  const result = await axios
-    .post(`/api/auth/user/load`)
-    .then((result) => {
-      console.log(result);
-      return result;
-    })
-    .catch((err) => console.log(err));
-  if (result?.data) {
-    const { data } = result;
-    console.log("loadUserAxios: Finish with data");
-    return data;
-  }
-  console.log("loadUserAxios: Finish no data");
-  return null;
-  // } catch (err: any) {
-  // console.log(err);
-  // }
+  const { data } = await axios.post<UserType | null>(`/api/auth/user/load`);
+  return data;
 };
+
+// export const loadUserAxios = async (): Promise<UserType | null> => {
+//   // try {
+//   console.log("loadUserAxios: Start");
+//   const result = await axios
+//     .post(`/api/auth/user/load`)
+//     .then((result) => {
+//       console.log(result);
+//       return result;
+//     })
+//     .catch((err) => console.log(err));
+//   if (result?.data) {
+//     const { data } = result;
+//     console.log("loadUserAxios: Finish with data");
+//     return data;
+//   }
+//   console.log("loadUserAxios: Finish no data");
+//   return null;
+//   // } catch (err: any) {
+//   // console.log(err);
+//   // }
+// };
 
 export const registerAxios = async (
   userLoginDetails: Partial<UserType>
