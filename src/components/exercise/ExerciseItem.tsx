@@ -12,7 +12,6 @@ import ButtonDropDown from "../common/ButtonDropDown";
 
 import {
   classNames,
-  completedTextClass,
   getClass,
   getEmojiIcon,
   vOrR,
