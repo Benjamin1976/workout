@@ -35,7 +35,7 @@ const SetItem = ({ set, id }: SetItemHeaderProps) => {
       <Col className="col-2 text-center">
         {vOrR(set, setFlds.unit, edit, updateSet, id)}
       </Col>
-      <Col className="col-4 text-end  align-items-center">
+      <Col className="col-4 ps-0 ms-0 text-end">
         <Button className={buttonClass} onClick={() => completeSet(set, id)}>
           <Icon icon={!set?.completed ? "pending" : "check_circle"} />
         </Button>

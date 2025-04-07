@@ -85,7 +85,9 @@ export const classNames = {
     completed: "bg-success text-white",
   },
   buttonClasses: {
-    base: "btn border-0 p-2 mx-1 ",
+    // base: "btn border-0 p-2 mx-1 ",
+    base: "btn border-0 p-1 mx-2 my-1 ",
+
     notStarted: "bg-white text-black",
     started: "bg-warning text-black",
     completed: "bg-success text-white",

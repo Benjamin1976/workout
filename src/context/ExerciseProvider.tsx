@@ -45,6 +45,7 @@ type ExerciseStateType = {
   timerVisible: boolean | null;
   add: boolean;
   edit: boolean;
+  loading: boolean;
 };
 
 const initExerciseState: ExerciseStateType = {
@@ -60,6 +61,7 @@ const initExerciseState: ExerciseStateType = {
   timerVisible: true,
   edit: false,
   add: false,
+  loading: true,
 };
 
 const EXERCISE_REDUCER_ACTION_TYPE = {
@@ -138,9 +140,9 @@ const reducer = (
     case EXERCISE_REDUCER_ACTION_TYPE.GET_SESSIONS: {
       const payload = action.payloadSessionPartial;
       if (!payload || !Array.isArray(payload)) {
-        return { ...state };
+        return { ...state, loading: false };
       } else {
-        return { ...state, sessions: payload };
+        return { ...state, sessions: payload, loading: false };
       }
     }
     case EXERCISE_REDUCER_ACTION_TYPE.LOAD_LAST_SESSION:
@@ -160,16 +162,17 @@ const reducer = (
         return {
           ...state,
           currentSession: currentSession,
+          loading: false,
         };
       } else {
-        return { ...state };
+        return { ...state, loading: false };
       }
     }
     case EXERCISE_REDUCER_ACTION_TYPE.CLEAR_CURRENT_SESSION: {
-      return { ...state, currentSession: null };
+      return { ...state, currentSession: null, loading: false };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.EDIT_SESSION: {
-      return { ...state, edit: !state.edit };
+      return { ...state, edit: !state.edit, loading: false };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.UPDATE_SESSION: {
       const payload = action?.payloadSession;
@@ -180,6 +183,7 @@ const reducer = (
       return {
         ...state,
         currentSession: payload,
+        loading: false,
       };
     }
 
@@ -196,6 +200,7 @@ const reducer = (
       return {
         ...state,
         sessions: newSessions,
+        loading: false,
       };
     }
 
@@ -208,6 +213,7 @@ const reducer = (
       return {
         ...state,
         sessions: payload,
+        loading: false,
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.SAVE_SESSION: {
@@ -231,9 +237,10 @@ const reducer = (
               : s
           ),
           currentSession: currentSession,
+          loading: false,
         };
       } else {
-        return { ...state };
+        return { ...state, loading: false };
       }
     }
 
@@ -245,16 +252,21 @@ const reducer = (
         Array.isArray(action.other) ||
         typeof action.other !== "boolean"
       ) {
-        return { ...state };
+        return { ...state, loading: false };
       } else {
-        return { ...state, timerVisible: action.other };
+        return { ...state, timerVisible: action.other, loading: false };
       }
     }
     case EXERCISE_REDUCER_ACTION_TYPE.SHOW_ADD_EXERCISE: {
       if (action?.other && Array.isArray(action.other)) {
-        return { ...state, add: !state.add, exercisesAll: action.other };
+        return {
+          ...state,
+          add: !state.add,
+          exercisesAll: action.other,
+          loading: false,
+        };
       } else {
-        return { ...state, add: !state.add };
+        return { ...state, add: !state.add, loading: false };
       }
     }
     case EXERCISE_REDUCER_ACTION_TYPE.ADD_EXERCISE: {
@@ -264,9 +276,10 @@ const reducer = (
           ...state,
           currentSession: payloadSession,
           add: false,
+          loading: false,
         };
       } else {
-        return { ...state };
+        return { ...state, loading: false };
       }
     }
     case EXERCISE_REDUCER_ACTION_TYPE.DELETE_EXERCISE: {
@@ -278,17 +291,19 @@ const reducer = (
         ...state,
         currentSession: action.payloadSession,
         deletePressed: "",
+        loading: false,
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.MARK_TO_DELETE: {
       if (action.id === undefined || typeof action.id !== "string") {
         console.log("action.id missing or incorrect in MARK_TO_DELETE action");
-        return { ...state };
+        return { ...state, loading: false };
       }
 
       return {
         ...state,
         deletePressed: action.id,
+        loading: false,
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.UPDATE_EXERCISE: {
@@ -315,6 +330,7 @@ const reducer = (
         ...state,
         currentSession: currentSession,
         currentExercise: currentExercise,
+        loading: false,
       };
     }
 
@@ -325,10 +341,10 @@ const reducer = (
         );
       }
 
-      return { ...state, currentExercise: action.payload };
+      return { ...state, currentExercise: action.payload, loading: false };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.CLEAR_CURRENT_EXERCISE: {
-      return { ...state, currentExercise: null };
+      return { ...state, currentExercise: null, loading: false };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.LINK_EXERCISE: {
       let payload = action.payloadSession;
@@ -336,7 +352,7 @@ const reducer = (
         throw new Error("action.payload missing in REORDER_EXERCISE action");
       }
 
-      return { ...state, currentSession: payload };
+      return { ...state, currentSession: payload, loading: false };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.SHOWHIDE_EXERCISE:
     case EXERCISE_REDUCER_ACTION_TYPE.SHOWHIDE_EXERCISE_ALL:
@@ -355,6 +371,7 @@ const reducer = (
       return {
         ...state,
         currentSession: payload,
+        loading: false,
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.START_SET: {
@@ -371,6 +388,7 @@ const reducer = (
         ...state,
         currentSession: payload,
         currentSet: payloadSet,
+        loading: false,
       };
     }
 
@@ -389,6 +407,7 @@ const reducer = (
         ...state,
         currentSession: action.payloadSession,
         currentSet: action.payloadSet,
+        loading: false,
       };
     }
 
@@ -402,6 +421,7 @@ const reducer = (
         ...state,
         currentSession: payload,
         deletePressed: null,
+        loading: false,
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.NEXT_SET: {
@@ -426,6 +446,7 @@ const reducer = (
         currentExercise: action.payload,
         currentSet: action.payloadSet,
         currentId: action.id,
+        loading: false,
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.CLEAR_NEXT_SET: {
@@ -434,6 +455,7 @@ const reducer = (
         currentExercise: null,
         currentSet: null,
         currentId: null,
+        loading: false,
       };
     }
 
@@ -479,7 +501,6 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   };
 
   const openSession = async (sessionId: string | null | undefined) => {
-    console.log(sessionId);
     if (!sessionId) return;
     localStorage.setItem("session", sessionId);
 

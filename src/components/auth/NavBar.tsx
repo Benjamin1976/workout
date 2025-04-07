@@ -32,8 +32,8 @@ const NavBar = () => {
   );
 
   return (
-    <NavbarBs className="bg-primary shadow-sm align-items-center">
-      <Container>
+    <NavbarBs className="bg-primary shadow-sm ">
+      <Container className="align-items-start p-0 ">
         <h1 className="text-white b-0 m-0">Workouts</h1>
         {isAuthenticated ? authLinks : guestLinks}
       </Container>

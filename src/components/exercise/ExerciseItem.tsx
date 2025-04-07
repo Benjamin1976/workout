@@ -12,6 +12,7 @@ import ButtonDropDown from "../common/ButtonDropDown";
 
 import {
   classNames,
+  completedTextClass,
   getClass,
   getEmojiIcon,
   vOrR,
@@ -72,11 +73,11 @@ const ExerciseItem = ({
   return (
     <>
       <Row className={rowClass + " border border-bottom-1 align-items-center"}>
-        <Col className="col-7 px-4">
+        <Col className="col-6 px-4 ">
           <h4>{exercise?.name?.name}</h4>
           {/* <h4>{vOrR(exercise, exerciseFlds.name, edit, updateExercise, id)}</h4> */}
         </Col>
-        <Col className="col-5">
+        <Col className="col-6">
           <Row className="text-end">
             <Col className="col-12">
               <Button

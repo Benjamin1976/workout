@@ -6,6 +6,7 @@ import { ExerciseItemType, SetItemType } from "../../context/types";
 
 import SetItem from "../set/SetItem";
 import Timer from "../common/Timer";
+import Spinner from "../common/Spinner";
 
 type ExerciseHighlightProps = {
   exercisesCompleted: boolean;
@@ -49,12 +50,14 @@ const ExerciseHighlight = ({ exercisesCompleted }: ExerciseHighlightProps) => {
     return (
       <div className={`border border-2 border-${bgColor} px-2 mb-2`}>
         <Row className={`bg-${bgColor} p-0 text-${textColor}`}>
-          <Col className="py-1 mt-1 h6 text-center">Loading exercise ...</Col>
+          <Col className="py-1 mt-1 h6 text-center">&nbsp;</Col>
         </Row>
         <Row>
-          <Col>Loading ...</Col>
+          <Col>
+            <Spinner />
+          </Col>
         </Row>
-        <Row>Loading...</Row>
+        <Row>&nbsp;</Row>
       </div>
     );
 

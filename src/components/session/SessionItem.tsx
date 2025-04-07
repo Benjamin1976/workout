@@ -49,8 +49,8 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
         <Row>
           <Col className="col-12 p-0 m-0">
             <div className="d-flex flex-column vh-100 overflow-hidden">
-              <Row className="align-items-center mb-1">
-                <Col className="col-3 small">
+              <Row className="align-items-center mb-1 pe-1">
+                <Col className="col-3">
                   {vOrR(
                     session,
                     sessionFlds.date,
@@ -59,7 +59,7 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
                     session._id
                   )}
                 </Col>
-                <Col className="col-4 small">
+                <Col className="col-5">
                   {vOrR(
                     session,
                     sessionFlds.name,
@@ -69,43 +69,12 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
                   )}{" "}
                   {!edit && <span>({totalExercises})</span>}
                 </Col>
-                <Col className="col-5 text-end">
+                <Col className="col-4 text-end">
                   <Button
                     className={buttonClass + textClass}
                     onClick={() => showTimer()}
                   >
                     <Icon icon={"fitness_center"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => completeExercisesAll(!allCompleted)}
-                  >
-                    <Icon icon={allCompleted ? "check_circle" : "pending"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showHideExerciseAll(true)}
-                  >
-                    <Icon icon={"visibility"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showHideExerciseAll(false)}
-                  >
-                    <Icon icon={"visibility_off"} />
-                  </Button>
-
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showAddExercise()}
-                  >
-                    <Icon icon={"add"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => editSession()}
-                  >
-                    <Icon icon={!edit ? "edit" : "close"} />
                   </Button>
                   {edit && (
                     <Button
@@ -115,6 +84,12 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
                       <Icon icon={"save"} />
                     </Button>
                   )}
+                  <Button
+                    className={buttonClass + textClass}
+                    onClick={() => editSession()}
+                  >
+                    <Icon icon={!edit ? "edit" : "close"} />
+                  </Button>
                   <Button
                     className={buttonClass + textClass}
                     onClick={() => closeSession()}
@@ -130,6 +105,41 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
               ) : (
                 <ExerciseHighlight exercisesCompleted={allCompleted} />
               )}
+              <Row
+                className="align-items-middle p-1 my-0"
+                // className="border border-1 align-items-middle p-1 my-0"
+              >
+                <Col className="col-6 h6" style={{ fontSize: "1.3rem" }}>
+                  Exercises
+                </Col>
+                <Col className="col-6 text-end" style={{ fontWeight: "bold" }}>
+                  <Button
+                    className={buttonClass + textClass}
+                    onClick={() => completeExercisesAll(!allCompleted)}
+                  >
+                    <Icon icon={allCompleted ? "check_circle" : "pending"} />
+                  </Button>
+                  <Button
+                    className={buttonClass + textClass}
+                    onClick={() => showAddExercise()}
+                  >
+                    <Icon icon={"add"} />
+                  </Button>
+                  <Button
+                    className={buttonClass + textClass}
+                    onClick={() => showHideExerciseAll(true)}
+                  >
+                    <Icon icon={"visibility"} />
+                  </Button>
+
+                  <Button
+                    className={buttonClass + textClass}
+                    onClick={() => showHideExerciseAll(false)}
+                  >
+                    <Icon icon={"visibility_off"} />
+                  </Button>
+                </Col>
+              </Row>
               <div className="h-100 scrollable overflow-auto">
                 <ExerciseList exercises={session.exercises} />
               </div>
