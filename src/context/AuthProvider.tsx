@@ -7,14 +7,18 @@ import {
   useReducer,
 } from "react";
 import { AuthItemType, UserType } from "./types";
-import axios from "axios";
 import setAuthToken from "../utilities/setAuthToken";
+import { configJSON, dbMsg, dbMsgLarge } from "../utilities/common";
 import {
-  configJSON,
-  ConfigJSONType,
-  dbMsg,
-  dbMsgLarge,
-} from "../utilities/common";
+  loadUserAxios,
+  loginAxios,
+  LoginType,
+  registerAxios,
+  sendValidationEmailAxios,
+  SendValidationEmailType,
+  validateUserCode,
+} from "../axios/auth.axios";
+import { TokenType } from "../axios/auth.axios";
 
 // import { AxiosResponse } from "axios";
 
@@ -160,68 +164,6 @@ const reducer = (
   }
 };
 
-type TokenType = {
-  token: string;
-};
-
-const validateUserCode = async (
-  user: UserType,
-  code: string,
-  configJSON: ConfigJSONType
-): Promise<TokenType> => {
-  const { data } = await axios.post<TokenType>(
-    "/api/users/validate",
-    { user, code },
-    configJSON
-  );
-  return data;
-};
-
-type SendValidationEmailType = {
-  emailSent: boolean;
-  newCode: string;
-};
-
-const sendValidationEmailAxios = async (
-  user: UserType,
-  configJSON: ConfigJSONType
-): Promise<SendValidationEmailType> => {
-  const { data } = await axios.post<SendValidationEmailType>(
-    "/api/users/validateemail",
-    { user },
-    configJSON
-  );
-  return data;
-};
-
-type LoginType = { email: string; password: string };
-
-const loginAxios = async (loginData: LoginType): Promise<TokenType> => {
-  const { data } = await axios.post<TokenType>(
-    "/api/auth",
-    loginData,
-    configJSON
-  );
-  return data;
-};
-
-const loadUserAxios = async (): Promise<UserType> => {
-  const { data } = await axios.get<UserType>(`/api/auth`);
-  return data;
-};
-
-const registerAxios = async (
-  userLoginDetails: Partial<UserType>
-): Promise<TokenType> => {
-  // try registering user with form data and json config
-  const { data } = await axios.post<TokenType>(
-    "/api/users",
-    userLoginDetails,
-    configJSON
-  );
-  return data;
-};
-
 // CONTEXT
 const useAuthContext = (initAuthState: AuthStateType) => {
   const [state, dispatch] = useReducer(reducer, initAuthState);
@@ -331,7 +273,7 @@ const useAuthContext = (initAuthState: AuthStateType) => {
     // try getting user from auth
     dbMsg(1, dbl, lm + "Getting user data from auth");
     loadUserAxios()
-      .then((user: UserType) => {
+      .then((user: UserType | null) => {
         dbMsgLarge(1, dbl, lm + "User result:-", user ?? "no data returned");
         if (!user) {
           dbMsg(1, dbl, lm + "User not loaded");
