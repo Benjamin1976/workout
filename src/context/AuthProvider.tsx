@@ -1,11 +1,4 @@
-import {
-  createContext,
-  ReactElement,
-  // useCallback,
-  // useEffect,
-  useMemo,
-  useReducer,
-} from "react";
+import { createContext, ReactElement, useMemo, useReducer } from "react";
 import { AuthItemType, UserType } from "./types";
 import setAuthToken from "../utilities/setAuthToken";
 import { configJSON, dbMsg, dbMsgLarge } from "../utilities/common";
@@ -22,7 +15,7 @@ import { TokenType } from "../axios/auth.axios";
 
 // import { AxiosResponse } from "axios";
 
-let dbl = 2;
+let DBL = 0;
 let dp = "context.auth";
 
 // Register User
@@ -174,21 +167,21 @@ const useAuthContext = (initAuthState: AuthStateType) => {
 
   const validateUser = (user: UserType, code: string) => {
     let lm = dp + ".validateUser: ";
-    dbMsg(1, dbl, lm + "Starting");
+    dbMsg(1, DBL, lm + "Starting");
 
     // try registering user with form data and json config
-    dbMsg(1, dbl, lm + "Validating code with API");
+    dbMsg(1, DBL, lm + "Validating code with API");
     validateUserCode(user, code, configJSON)
       .then((token: TokenType): void => {
         if (!token) {
-          dbMsg(1, dbl, lm + "Other Issue");
+          dbMsg(1, DBL, lm + "Other Issue");
           dispatch({
             type: AUTH_REDUCER_ACTIONS.VALIDATE_FAIL,
           });
           return;
         }
 
-        dbMsgLarge(1, dbl, lm + "User Validation result:-", token);
+        dbMsgLarge(1, DBL, lm + "User Validation result:-", token);
         loadUser();
       })
       .catch((err: any) => {
@@ -202,12 +195,12 @@ const useAuthContext = (initAuthState: AuthStateType) => {
   const sendValidationEmail = async (user: UserType) => {
     let lm = dp + ".sendValidationEmail: ";
 
-    dbMsg(1, dbl, lm + "Starting");
+    dbMsg(1, DBL, lm + "Starting");
     sendValidationEmailAxios(user, configJSON)
       .then((emailResult: SendValidationEmailType) => {
         // try registering user with form data and json config
         console.log(emailResult);
-        dbMsg(1, dbl, lm + "Validating code with API");
+        dbMsg(1, DBL, lm + "Validating code with API");
       })
       .catch((err: any) => {
         dispatch({
@@ -222,9 +215,8 @@ const useAuthContext = (initAuthState: AuthStateType) => {
     let lm = dp + ".login: ";
 
     // try registering user with form data and json config
-    dbMsg(1, dbl, lm + "Starting login");
-    dbMsg(1, dbl, lm + "Posting form for login");
-    dbMsgLarge(1, dbl, lm + "formData:-", loginData);
+    dbMsg(1, DBL, lm + "Starting login");
+    dbMsg(1, DBL, lm + "Posting form for login");
     loginAxios(loginData)
       .then((tokenData: Partial<AuthItemType>) => {
         const { token } = tokenData;
@@ -243,14 +235,14 @@ const useAuthContext = (initAuthState: AuthStateType) => {
       .then((token) => {
         if (token && localStorage.getItem("token")) {
           // load user and return user details
-          dbMsg(1, dbl, lm + "Load User");
+          dbMsg(1, DBL, lm + "Load User");
           loadUser();
         }
       })
       .catch((err: any) => {
         let errMsg = getError(err);
-        dbMsgLarge(1, dbl, lm + "Error:-", errMsg);
-        dbMsg(1, dbl, lm + "Finish");
+        dbMsgLarge(1, DBL, lm + "Error:-", errMsg);
+        dbMsg(1, DBL, lm + "Finish");
         dispatch({
           type: AUTH_REDUCER_ACTIONS.LOGIN_FAIL,
           payload: errMsg.data.msg,
@@ -262,36 +254,36 @@ const useAuthContext = (initAuthState: AuthStateType) => {
   const loadUser = async () => {
     let lm = dp + ".loadUser: ";
 
-    dbMsg(1, dbl, lm + "Starting");
+    dbMsg(1, DBL, lm + "Starting");
 
     const token = localStorage.getItem("token");
     if (token) {
-      dbMsg(1, dbl, lm + "Token Exists, setting in header");
+      dbMsg(1, DBL, lm + "Token Exists, setting in header");
       setAuthToken(token);
     }
 
     // try getting user from auth
-    dbMsg(1, dbl, lm + "Getting user data from auth");
+    dbMsg(1, DBL, lm + "Getting user data from auth");
     loadUserAxios()
       .then((user: UserType | null) => {
-        dbMsgLarge(1, dbl, lm + "User result:-", user ?? "no data returned");
+        dbMsgLarge(1, DBL, lm + "User result:-", user ?? "no data returned");
         if (!user) {
-          dbMsg(1, dbl, lm + "User not loaded");
+          dbMsg(1, DBL, lm + "User not loaded");
           dispatch({ type: AUTH_REDUCER_ACTIONS.USER_NOT_LOADED });
           return;
         }
 
         // send user to reducer and mark as authenticated
-        dbMsg(1, dbl, lm + "User loaded");
+        dbMsg(1, DBL, lm + "User loaded");
         dispatch({
           type: AUTH_REDUCER_ACTIONS.USER_LOADED,
           user: user,
         });
-        dbMsg(1, dbl, lm + "Finish");
+        dbMsg(1, DBL, lm + "Finish");
       })
       .catch((err: any) => {
-        dbMsgLarge(1, dbl, lm + "Error:-", err.toString());
-        dbMsg(1, dbl, lm + "Finish");
+        dbMsgLarge(1, DBL, lm + "Error:-", err.toString());
+        dbMsg(1, DBL, lm + "Finish");
         dispatch({ type: AUTH_REDUCER_ACTIONS.AUTH_ERROR });
       });
   };
