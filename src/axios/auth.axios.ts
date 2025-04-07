@@ -50,7 +50,7 @@ export const loginAxios = async (loginData: LoginType): Promise<TokenType> => {
 export const loadUserAxios = async (): Promise<UserType | null> => {
   // try {
   console.log("loadUserAxios: Start");
-  const { data } = await axios.post<UserType | null>(`/api/auth/user/load`);
+  const { data } = await axios.get<UserType | null>(`/api/auth/user/load`);
   return data;
 };
 
