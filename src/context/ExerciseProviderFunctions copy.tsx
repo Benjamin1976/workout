@@ -1,25 +1,17 @@
-import {
-  SetItemType,
-  ExerciseItemType,
-  ExerciseStartedType,
-  ExerciseCompletedType,
-  UpdateFieldPropTypes,
-} from "./types";
+import { SetItemType, ExerciseItemType } from "./types";
 
-export const setsCompleted = (sets: SetItemType[] | null): boolean => {
+export const setsCompleted = (sets: SetItemType[]): boolean => {
   if (!sets || !sets?.length) return true;
   return !sets.find((set: SetItemType): boolean => !set?.completed);
 };
 
-export const exerciseCompleted = (
-  exercise: ExerciseItemType | null
-): boolean => {
-  if (!exercise?.sets || !exercise?.sets?.length) return true;
+export const exerciseCompleted = (exercise: ExerciseItemType): boolean => {
+  if (!exercise?.sets?.length) return true;
   return setsCompleted(exercise.sets);
 };
 
-export const exercisesCompleted = (exercises: ExerciseItemType[] | null) => {
-  if (!exercises || !exercises?.length) return true;
+export const exercisesCompleted = (exercises: ExerciseItemType[]) => {
+  if (!exercises?.length) return true;
   return !exercises.find(
     (exercise: ExerciseItemType) => !exerciseCompleted(exercise)
   );
@@ -102,10 +94,8 @@ export const getNextExerciseAndSet = (
 //   return { nextExercise: nextExercise ?? exercise, nextSet: nextSet ?? set };
 // };
 
-export const findNextSet = (
-  sets: SetItemType[] | null
-): SetItemType | undefined => {
-  if (!sets || !sets?.length) return undefined;
+export const findNextSet = (sets: SetItemType[]): SetItemType | undefined => {
+  if (!sets?.length) return undefined;
   return sets.find((set) => !set?.completed);
 };
 
@@ -137,9 +127,9 @@ export const findNextSupersetEx = (
 };
 
 export const findNextExercise = (
-  exercises: ExerciseItemType[] | null
+  exercises: ExerciseItemType[]
 ): ExerciseItemType | undefined => {
-  if (!exercises || !exercises?.length) return undefined;
+  if (!exercises?.length) return undefined;
   return exercises.find((exercise) => {
     if (!exercise?.sets?.length) return undefined;
     return !setsCompleted(exercise?.sets);
@@ -159,6 +149,56 @@ export const findNextExercise = (
 //   });
 // };
 
+type UpdateFieldPropTypes = {
+  field: string;
+  value: boolean | number | string | Date | null;
+};
+
+export const updateSetOnExercises = (
+  exercises: ExerciseItemType[],
+  setToFind: SetItemType,
+  whatToUpdate: UpdateFieldPropTypes[]
+): ExerciseItemType[] => {
+  return exercises.map((exercise: ExerciseItemType) => {
+    if (!exercise?.sets?.length) return exercise;
+
+    return {
+      ...exercise,
+      sets: exercise.sets.map((set: SetItemType) => {
+        if (set._id !== setToFind._id) return set;
+        let setUpdated = { ...set };
+        whatToUpdate.forEach((update) => {
+          setUpdated[update.field] =
+            update?.value === null ? null : update.value;
+        });
+        return setUpdated;
+      }),
+    };
+  });
+};
+
+export const deleteSetOnExercises = (
+  exercises: ExerciseItemType[],
+  setToFind: SetItemType
+): ExerciseItemType[] => {
+  return exercises.map((exercise: ExerciseItemType) => {
+    if (!exercise?.sets?.length) return exercise;
+
+    let sets = exercise.sets.filter((set: SetItemType) => {
+      if (set._id !== setToFind._id) return set;
+    });
+
+    sets = sets.map((set: SetItemType, i: number) => {
+      return { ...set, no: i + 1 };
+    });
+
+    return {
+      ...exercise,
+      sets: sets,
+    };
+  });
+};
+
 export const started = {
   text: "started",
   yes: { started: true, startedWhen: new Date() },
@@ -172,9 +212,9 @@ export const completed = {
 };
 
 export const updateTheExerciseStatus = (
-  exercise: ExerciseItemType | null,
+  exercise: ExerciseItemType,
   markCompleted: boolean
-): ExerciseItemType | null => {
+): ExerciseItemType => {
   if (exercise === null || exercise === undefined) return exercise;
 
   exercise.sets = exercise.sets.map((set: SetItemType) => {
@@ -264,6 +304,108 @@ export const updateAllExsStatus = (
   });
 };
 
+// updates all the exercise to either started/startedWhen or completed/completedWhen
+//    to either false/null or true/date
+//    based on if the sets are started/complete
+//  TO-DO: can enhance to update exercise.startedWhen = exercise.set[0].startedWhen
+//      or conversely, exercise.completedWhen = exercise.set[set.length-1].completedWhen
+export const checkSetsStatus = (
+  exercise: ExerciseItemType,
+  startComplete: { yes: object; no: object },
+  what: string
+): ExerciseItemType => {
+  const sets = exercise.sets;
+  if (!sets?.length) return { ...exercise, ...startComplete.no };
+
+  let updatedEx = { ...exercise };
+  // check if the sets are completed
+  // and check if the exercise is started or completed
+  const setsStartComplete = sets.filter((set) => set?.[what]).length > 0;
+  const exStartedComplete = exercise?.[what];
+
+  if (setsStartComplete && !exStartedComplete) {
+    updatedEx = { ...updatedEx, ...startComplete.yes };
+  } else if (!setsStartComplete && exStartedComplete) {
+    updatedEx = { ...updatedEx, ...startComplete.no };
+  }
+  return updatedEx;
+};
+
+// updates all the sets either started/startedWhen or completed/completedWhen
+//    to either false/null or true/date
+export const setAllSetsStatus = (
+  exercise: ExerciseItemType,
+  startComplete: { yes: object; no: object },
+  what: string,
+  forceYes: boolean
+): ExerciseItemType => {
+  let updatedExercise = { ...exercise };
+  let sets = updatedExercise.sets;
+  if (!sets?.length) return exercise;
+
+  sets = sets.map((set: SetItemType) => {
+    // check if the set is started or completed
+    //    and only update if data is not already there
+    const setStartedCompleted = set?.[what];
+    // if forcing "completed" or "started" values
+    //    check if the set or exercise already has values before updatinr
+    // OR ... if forcing "not completed" or "not started" values
+    //    check if the set or exercise already has values before updatinr
+    if (forceYes && !setStartedCompleted) {
+      set = { ...set, ...startComplete.yes };
+    } else if (!forceYes && setStartedCompleted) {
+      set = { ...set, ...startComplete.no };
+    }
+
+    return set;
+  });
+
+  updatedExercise.sets = sets;
+  return updatedExercise;
+};
+
+// update the exercise status based on status of all the sets
+//   i.e. if all sets completed, update exercise to completed
+//   i.e. if one set started, update exercise to completed started
+export const updateExStatusFromSets = (
+  exercise: ExerciseItemType
+): ExerciseItemType => {
+  let updatedExercise;
+  updatedExercise = checkSetsStatus(exercise, started, "started");
+  updatedExercise = checkSetsStatus(exercise, completed, "completed");
+  return updatedExercise;
+};
+
+export const updateExercisesStatus = (
+  exercises: ExerciseItemType[],
+  statusToForce: boolean
+): ExerciseItemType[] => {
+  let updatedExercises = exercises.map((exercise) => {
+    let updatedExercise = { ...exercise };
+
+    // check if to update start
+    if (statusToForce && !exercise?.started) {
+      updatedExercise = { ...updatedExercise, ...started.yes };
+    } else if (!statusToForce && exercise?.started) {
+      updatedExercise = { ...updatedExercise, ...started.no };
+    }
+
+    // check if to update complete
+    if (statusToForce && !exercise?.completed) {
+      updatedExercise = { ...updatedExercise, ...completed.yes };
+    } else if (!statusToForce && exercise?.completed) {
+      updatedExercise = { ...updatedExercise, ...completed.no };
+    }
+    return updatedExercise;
+  });
+  return updatedExercises;
+};
+
+type ExerciseStartedType = {
+  started: boolean;
+  startedWhen: Date | null;
+};
+
 export const getExerciseStartedValues = (
   exercise: ExerciseItemType
 ): ExerciseStartedType => {
@@ -278,28 +420,38 @@ export const getExerciseStartedValues = (
   return started.no;
 };
 
+type ExerciseCompletedType = {
+  completed: boolean;
+  completedWhen: Date | null;
+};
+
 export const getExerciseCompletedValues = (
   exercise: ExerciseItemType
 ): ExerciseCompletedType => {
-  if (!exercise?.sets || !exercise?.sets?.length) return completed.yes;
+  if (!exercise?.sets?.length) return completed.no;
   const setsNotDone = exercise.sets.filter((set) => !set?.completed);
   const setsNotDoneLength = setsNotDone?.length;
-  const lastSet = setsNotDone?.[setsNotDoneLength - 1];
+  console.log(setsNotDone);
 
   // if any set is not done, mark exercise as not completed
-  if (setsNotDoneLength > 0) return completed.no;
+  if (setsNotDoneLength) return completed.no;
 
   // if all sets is done and exercise is already completed
   //    updated exercise with last set value
-  if (exercise.completed && lastSet?.completedWhen) {
+  if (exercise.completed)
     return {
       ...completed.yes,
       completedWhen: setsNotDone[setsNotDoneLength - 1].completedWhen,
     };
-  }
 
   // otherwise just update with new values
   return completed.yes;
+};
+
+export const updateExercisesToStarted = (
+  exercises: ExerciseItemType[]
+): ExerciseItemType[] => {
+  return exercises.map((exercise) => updateExerciseToStarted(exercise));
 };
 
 export const updateExerciseStartedCompleted = (
@@ -313,6 +465,43 @@ export const updateExerciseStartedCompleted = (
   return { ...exercise, ...startCompleteValues };
 };
 
+export const updateExerciseToStarted = (
+  exercise: ExerciseItemType
+): ExerciseItemType => {
+  const startedUpdated = getExerciseStartedValues(exercise);
+  return { ...exercise, ...startedUpdated };
+};
+
+export const updateExercisesToCompleted = (
+  exercises: ExerciseItemType[]
+): ExerciseItemType[] => {
+  return exercises.map((exercise) => updateExerciseToCompleted(exercise));
+};
+
+export const updateExerciseToCompleted = (
+  exercise: ExerciseItemType
+): ExerciseItemType => {
+  const completedUpdate = getExerciseCompletedValues(exercise);
+  return { ...exercise, ...completedUpdate };
+};
+
+export const markSets = (
+  exercise: ExerciseItemType,
+  markCompleted: boolean
+): ExerciseItemType => {
+  let update = {
+    completed: markCompleted,
+    completedWhen: markCompleted ? new Date() : null,
+  };
+  let sets = exercise.sets.map((set: SetItemType) => {
+    let completed = set?.completed;
+    if ((completed && markCompleted) || (!completed && !markCompleted))
+      return set;
+    return { ...set, ...update };
+  });
+  return { ...exercise, ...update, sets: sets };
+};
+
 // function isOdd(num: number): boolean { return num & 1 ? true : false}
 export const getIds = (
   idString: string
@@ -322,7 +511,7 @@ export const getIds = (
   return { exerciseId: ids[0], setId: ids.length > 1 ? ids[1] : undefined };
 };
 
-export const updateSetFieldValues = (
+const updateSetFieldValues = (
   objectToUpdate: SetItemType,
   whatToUpdate: UpdateFieldPropTypes[]
 ) => {
@@ -338,7 +527,7 @@ export const updateSetFieldValues = (
   return objUpdated;
 };
 
-export const updateExerciseFieldValues = (
+const updateExerciseFieldValues = (
   objectToUpdate: ExerciseItemType,
   whatToUpdate: UpdateFieldPropTypes[]
 ) => {

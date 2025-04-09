@@ -1,3 +1,18 @@
+export type ExerciseStartedType = {
+  started: boolean;
+  startedWhen: Date | null;
+};
+
+export type UpdateFieldPropTypes = {
+  field: string;
+  value: boolean | number | string | Date | null;
+};
+
+export type ExerciseCompletedType = {
+  completed: boolean;
+  completedWhen: Date | null;
+};
+
 export type UserType = {
   _id: string;
   name: string;
@@ -60,6 +75,9 @@ export const SetItemInitialValues = {
 export type ExerciseNameType = {
   _id: string;
   name: string;
+  comments?: string;
+  created?: Date;
+  updated?: Date;
 };
 
 export const ExerciseNameInitialValues = {

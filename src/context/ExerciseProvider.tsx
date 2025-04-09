@@ -841,7 +841,8 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     let updExercises = [...currentSession.exercises];
     let updExercise = exercise;
 
-    updExercise = updateTheExerciseStatus(updExercise, markCompleted);
+    let exsUpdated = updateTheExerciseStatus(updExercise, markCompleted);
+    updExercise = !exsUpdated ? exercise : exsUpdated;
     updExercises[exerciseId] = updExercise;
 
     findNextSet(updExercises, exerciseId, 0);
