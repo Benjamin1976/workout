@@ -1,5 +1,5 @@
 import { test } from "vitest";
-import exerciseData from "../data/exercises.json";
+import exerciseData from "../__data__/exercises.json";
 import {
   ExerciseItemType,
   ExerciseNameType,

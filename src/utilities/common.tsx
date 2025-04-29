@@ -1,12 +1,12 @@
+import { DateTime, DurationUnit, DurationUnits } from "luxon";
 import { ReactElement, ReactNode } from "react";
-import { DateTime, DurationUnits } from "luxon";
+import { UpdateValueType } from "../context/ExerciseProvider";
 import {
   ExerciseItemType,
   SessionItemType,
   SessionListItemType,
   SetItemType,
 } from "../context/types";
-import { UpdateValueType } from "../context/ExerciseProvider";
 
 export type ConfigJSONType = {
   headers: {
@@ -25,11 +25,19 @@ export const getNowTime = () => {
   return time.setSeconds(time.getSeconds());
 };
 
+export const getExpiryTime = (timeDefault = 90): DateTime => {
+  const time = DateTime.local().plus({ seconds: timeDefault });
+  return time.isValid ? time : DateTime.local();
+  // const time = new Date();
+  // time.setSeconds(time.getSeconds() + timeDefault);
+  // return time;
+};
+
 export const dbMsg = (lvl: number, dbl: number, msg: string) => {
-  let includeTime = false;
-  let dbgLevel = dbl === null || dbl === undefined ? 0 : dbl;
+  const includeTime = false;
+  const dbgLevel = dbl === null || dbl === undefined ? 0 : dbl;
   // let dtStamp = DateTime.now().toFormat("yyyy-LL-dd hh:mm:ss,");
-  let dtStamp = DateTime.now().toFormat("yyyy-LL-dd hh:mm:ss.SSS");
+  const dtStamp = DateTime.now().toFormat("yyyy-LL-dd hh:mm:ss.SSS");
   msg = includeTime ? dtStamp + ": " + msg : msg;
   if (dbgLevel >= lvl) console.log(msg);
 };
@@ -38,16 +46,16 @@ export const dbMsgLarge = (
   lvl: number,
   dbl: number,
   msg: string,
-  data: any
+  data: unknown
 ) => {
-  let dbgLevel = dbl === null || dbl === undefined ? 0 : dbl;
+  const dbgLevel = dbl === null || dbl === undefined ? 0 : dbl;
   if (dbgLevel >= lvl) {
     if (msg) console.log(msg);
     if (data) console.log(data);
   }
 };
 
-export const existsNotNull = (item: any) =>
+export const existsNotNull = (item: unknown) =>
   item && item !== undefined && item !== null;
 
 export const isCurrentSession = (
@@ -110,7 +118,7 @@ export const getClass = (
   item: ExerciseItemType | SetItemType
 ): string => {
   const { buttonClasses, rowClasses, headerRowClasses } = classNames;
-  let className = buttonNotText ? classNames.buttonClasses.base : "";
+  const className = buttonNotText ? classNames.buttonClasses.base : "";
 
   let classes = rowClasses;
   switch (rowOrHead) {
@@ -192,16 +200,16 @@ export const vOrR = (
   },
   edit: boolean,
   func: (
-    data: SessionItemType | ExerciseItemType | SetItemType | any,
+    data: SessionItemType | ExerciseItemType | SetItemType | unknown,
     id: string,
     update: UpdateValueType
   ) => void,
   id: string | null | undefined
 ): string | ReactElement | undefined => {
   if (id === undefined || id === null) return "";
-  let { title, field, type } = fields;
+  const { title, field, type } = fields;
   let value = data[field];
-  let key = [id, field].join(".");
+  const key = [id, field].join(".");
   value = value === null || value === undefined ? "" : value;
 
   switch (type.toLowerCase()) {
@@ -326,7 +334,7 @@ export const getEmojiIcon = (value: number): string => {
 
 export const dateFormat = (value: null | string): string => {
   if (!value) return "";
-  let dateTime = DateTime.fromISO(value.toString());
+  const dateTime = DateTime.fromISO(value.toString());
   return dateTime.isValid
     ? dateTime.toFormat("dd-MMM-yy").toString()
     : value.toString();
@@ -334,7 +342,7 @@ export const dateFormat = (value: null | string): string => {
 
 export const dateFormatCtl = (value: null | string): string => {
   if (!value) return "";
-  let dateTime = DateTime.fromISO(value.toString());
+  const dateTime = DateTime.fromISO(value.toString());
   return dateTime.isValid
     ? dateTime.toFormat("yyyy-LL-dd").toString()
     : value.toString();
@@ -350,7 +358,7 @@ export const agoDateString = (dateCompare: DateTime): string => {
   const diff = dateNew.diff(dateCompare, units);
   let agoString: string = "";
 
-  units.forEach((unit: any) => {
+  units.forEach((unit: DurationUnit) => {
     const unitValue = diff.get(unit);
     if (!agoString && unitValue >= 1) {
       const unitString =

@@ -220,6 +220,13 @@ export const SessionItemInitialValues = {
   updated: new Date(),
 };
 
+export type FieldOptionsType = {
+  field: string;
+  type: string;
+  title?: string;
+  options?: string[];
+};
+
 export const sessionFlds = {
   name: { title: "Name", field: "name", type: "text" },
   date: { title: "Date", field: "date", type: "date" },

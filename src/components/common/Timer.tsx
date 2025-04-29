@@ -2,10 +2,11 @@ import { useEffect } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { useTimer } from "react-timer-hook";
 
-import useExercise from "../../hooks/useExercise";
 import { ExerciseItemType, SetItemType } from "../../context/types";
+import useExercise from "../../hooks/useExercise";
 
-import { getNowTime } from "../../utilities/common";
+import { DateTime } from "luxon";
+import { getExpiryTime } from "../../utilities/common";
 import Icon from "./Icon";
 
 type TimerProps = {
@@ -19,58 +20,60 @@ const Timer = ({ timerDuration = 90, set, setId }: TimerProps) => {
     startSet,
     completeSet,
     findNextSet,
+    timerExpiry,
     currentSession,
     currentExercise,
   } = useExercise();
+
   const exercises: ExerciseItemType[] = currentSession?.exercises ?? [];
+  const expiryTimestamp: Date = DateTime.local().toJSDate();
 
   useEffect(() => {
-    if (localStorage.getItem("expiryTimestamp")) {
-      restartFromStorage();
+    const expiryFromStorage = localStorage.getItem("expiryTimestamp");
+    if (timerExpiry) {
+      restartFromExpiry(timerExpiry);
+    } else if (expiryFromStorage) {
+      restartFromExpiry(expiryFromStorage);
+    } else {
+      const expiryNew = getExpiryTime(timerDuration);
+      restartFromExpiry(expiryNew.toISO()!.toString());
     }
-  }, [timerDuration]);
+  }, [timerDuration, timerExpiry]);
 
-  const restartTimer = (expiryDuration: number) => {
-    let expiryTimestamp = getExpiryTime(expiryDuration);
-    localStorage.setItem("expiryTimestamp", expiryTimestamp.toString());
-    restart(expiryTimestamp);
+  const restartFromExpiry = (expiryTimeText: string) => {
+    const expiryTimestamp = DateTime.fromISO(expiryTimeText);
+    const nowTimestamp = DateTime.local();
+
+    if (expiryTimestamp.isValid && expiryTimestamp > nowTimestamp) {
+      localStorage.setItem(
+        "expiryTimestamp",
+        expiryTimestamp.toISO().toString()
+      );
+      restart(expiryTimestamp.toJSDate());
+    }
   };
 
-  const restartFromStorage = () => {
-    let expiryTimeText = localStorage.getItem("expiryTimestamp");
-    if (!expiryTimeText) return;
-
-    let expiryTimestamp = parseInt(expiryTimeText);
-    let nowTimestamp = getNowTime();
-
-    if (expiryTimestamp > nowTimestamp) {
-      restart(new Date(expiryTimestamp));
-    }
+  const restartTimer = (expiryDuration: number) => {
+    const expiryTimestamp = getExpiryTime(expiryDuration);
+    localStorage.setItem("expiryTimestamp", expiryTimestamp.toString());
+    restart(expiryTimestamp.toJSDate());
   };
 
   const startTheSet = () => {
     startSet(set, setId);
-    restart(getExpiryTime(timerDuration));
+    restartTimer(timerDuration);
   };
 
   const completeTheSet = () => {
     completeSet(set, setId);
     if (currentExercise && set) {
       findNextSet(exercises, currentExercise.id, set.id);
-      restart(getExpiryTime(timerDuration));
+      restartTimer(timerDuration);
     }
-  };
-
-  const getExpiryTime = (timeDefault = 90): Date => {
-    let time = new Date();
-    time.setSeconds(time.getSeconds() + timeDefault);
-    return time;
   };
 
   const padTimes = (value: number): string =>
     (value.toString().length === 1 ? "0" : "") + value.toString();
-
-  let expiryTimestamp = getExpiryTime(timerDuration);
 
   const { seconds, minutes, pause, resume, restart } = useTimer({
     expiryTimestamp,
@@ -113,7 +116,6 @@ const Timer = ({ timerDuration = 90, set, setId }: TimerProps) => {
                     className="btn btn-sm"
                     onClick={() => restartTimer(timerDuration)}
                   >
-                    {/* Restart */}
                     <Icon icon="refresh" />
                   </Button>
                 </Col>
@@ -132,49 +134,6 @@ const Timer = ({ timerDuration = 90, set, setId }: TimerProps) => {
       </Container>
     </>
   );
-  // return (
-  //   <>
-  //     <Container className="p-1 m-1">
-  //       <Row>
-  //         <Col className="text-center">
-  //           <Button className="btn btn-sm  " onClick={() => startTheSet()}>
-  //             Start
-  //           </Button>
-  //         </Col>
-  //         <Col className="text-center h1">
-  //           {padTimes(minutes)}:{padTimes(seconds)}
-  //         </Col>
-  //         <Col className="text-center">
-  //           <Button
-  //             className="btn btn-sm btn-primary"
-  //             onClick={() => completeTheSet()}
-  //           >
-  //             Finish
-  //           </Button>
-  //         </Col>
-  //       </Row>
-  //       <Row>
-  //         <Col className="text-center">
-  //           <Button className="btn btn-sm" onClick={() => pause()}>
-  //             {/* Pause */}
-  //             <Icon icon="pause" />
-  //           </Button>
-  //           <Button className="btn btn-sm" onClick={() => resume()}>
-  //             {/* Resume */}
-  //             <Icon icon="play_arrow" />
-  //           </Button>
-  //           <Button
-  //             className="btn btn-sm"
-  //             onClick={() => restartTimer(timerDuration)}
-  //           >
-  //             {/* Restart */}
-  //             <Icon icon="refresh" />
-  //           </Button>
-  //         </Col>
-  //       </Row>
-  //     </Container>
-  //   </>
-  // );
 };
 
 export default Timer;

@@ -3,17 +3,18 @@ import { sessionFlds, SessionItemType } from "../../context/types";
 
 import useExercise from "../../hooks/useExercise";
 
-import ExerciseList from "../exercise/ExerciseList";
-import ExerciseHighlight from "../exercise/ExerciseHighlight";
-import ExerciseAdd from "../exercise/ExerciseAdd";
 import Icon from "../common/Icon";
+import ExerciseAdd from "../exercise/ExerciseAdd";
+import ExerciseHighlight from "../exercise/ExerciseHighlight";
+import ExerciseList from "../exercise/ExerciseList";
 
+import { useEffect } from "react";
 import {
   completedButtonClass,
   completedTextClass,
-  vOrR,
 } from "../../utilities/common";
-import { useEffect } from "react";
+import DateInput from "../common/DateInput";
+import TextInput from "../common/TextInput";
 
 type SessionItemHeaderProps = {
   session: SessionItemType;
@@ -37,6 +38,7 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
 
   useEffect(() => {
     showTimer(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const allCompleted = totalExercises === exercisesCompleted;
@@ -51,22 +53,22 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
             <div className="d-flex flex-column vh-100 overflow-hidden">
               <Row className="align-items-center mb-1 pe-1">
                 <Col className="col-3">
-                  {vOrR(
-                    session,
-                    sessionFlds.date,
-                    edit,
-                    updateSession,
-                    session._id
-                  )}
+                  <DateInput
+                    edit={edit}
+                    value={session.date.toString()}
+                    fieldOptions={sessionFlds.date}
+                    id={session._id}
+                    onchange={updateSession}
+                  />
                 </Col>
                 <Col className="col-5">
-                  {vOrR(
-                    session,
-                    sessionFlds.name,
-                    edit,
-                    updateSession,
-                    session._id
-                  )}{" "}
+                  <TextInput
+                    edit={edit}
+                    value={session.name}
+                    fieldOptions={sessionFlds.name}
+                    id={session._id}
+                    onchange={updateSession}
+                  />{" "}
                   {!edit && <span>({totalExercises})</span>}
                 </Col>
                 <Col className="col-4 text-end">

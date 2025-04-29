@@ -1,5 +1,5 @@
 import { test } from "vitest";
-import setsData from "../data/sets.json";
+import setsData from "../__data__/sets.json";
 import { SetItemType } from "../../context/types";
 
 const sets: SetItemType[] = [];

@@ -1,11 +1,12 @@
 import { Button, Col, Row } from "react-bootstrap";
 
-import useExercise from "../../hooks/useExercise";
 import { setFlds, SetItemType } from "../../context/types";
+import useExercise from "../../hooks/useExercise";
 
 import Icon from "../common/Icon";
 
-import { classNames, getClass, vOrR } from "../../utilities/common";
+import { classNames, getClass } from "../../utilities/common";
+import TextInput from "../common/TextInput";
 
 type SetItemHeaderProps = {
   set: SetItemType;
@@ -27,13 +28,31 @@ const SetItem = ({ set, id }: SetItemHeaderProps) => {
     >
       <Col className="col-2 text-center">{set?.no ? set.no : 1}</Col>
       <Col className="col-2 text-center">
-        {vOrR(set, setFlds.reps, edit, updateSet, id)}
+        <TextInput
+          value={set.reps}
+          fieldOptions={setFlds.reps}
+          edit={edit}
+          onchange={updateSet}
+          id={id}
+        />
       </Col>
       <Col className="col-2 text-center">
-        {vOrR(set, setFlds.weight, edit, updateSet, id)}
+        <TextInput
+          value={set.weight}
+          fieldOptions={setFlds.weight}
+          edit={edit}
+          onchange={updateSet}
+          id={id}
+        />
       </Col>
-      <Col className="col-1 text-center">
-        {vOrR(set, setFlds.unit, edit, updateSet, id)}
+      <Col className="col-2 text-center">
+        <TextInput
+          value={set.unit}
+          fieldOptions={setFlds.unit}
+          edit={edit}
+          onchange={updateSet}
+          id={id}
+        />
       </Col>
       <Col className="col ps-0 ms-0 text-end">
         <Button className={buttonClass} onClick={() => completeSet(set, id)}>
@@ -45,7 +64,6 @@ const SetItem = ({ set, id }: SetItemHeaderProps) => {
         <Button
           className={rowClass + (deletePressedOnMe ? deleteClass : buttonClass)}
           onClick={() => deleteSet(id)}
-          // onClick={() => deleteSet(set, id)}
         >
           <Icon icon="delete" />
         </Button>

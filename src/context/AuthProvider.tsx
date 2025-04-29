@@ -19,13 +19,13 @@ let DBL = 0;
 let dp = "context.auth";
 
 // Register User
-type LoginDetailsType = {
+export type LoginDetailsType = {
   name: string;
   email: string;
   password: string;
 };
 
-type AuthStateType = {
+export type AuthStateType = {
   token: string | null;
   isAuthenticated: boolean;
   isValidated: boolean;
@@ -34,7 +34,7 @@ type AuthStateType = {
   error: string | null;
 };
 
-const initAuthState: AuthStateType = {
+export const initAuthState: AuthStateType = {
   token: localStorage.getItem("token"),
   isAuthenticated: false,
   isValidated: false,
@@ -43,7 +43,7 @@ const initAuthState: AuthStateType = {
   error: null,
 };
 
-const AUTH_REDUCER_ACTION_TYPE = {
+export const AUTH_REDUCER_ACTION_TYPE = {
   REGISTER_SUCCESS: "REGISTER_SUCCESS",
   VALIDATE_USER: "VALIDATE_USER",
   INVALIDATE_USER: "INVALIDATE_USER",
@@ -70,7 +70,7 @@ export type AuthReducerAction = {
   error?: string | null;
 };
 
-const reducer = (
+export const reducer = (
   state: AuthStateType,
   action: AuthReducerAction
 ): AuthStateType => {
@@ -80,7 +80,7 @@ const reducer = (
         action?.payload?.isValidated === undefined ||
         action?.payload?.isValidated === null
       ) {
-        return { ...state };
+        return { ...state, loading: false };
       }
 
       return {
@@ -113,7 +113,7 @@ const reducer = (
       // console.log("reducer.auth.user_loaded: user: ", action?.user);
 
       if (!action?.user) {
-        return { ...state };
+        return { ...state, loading: false };
       }
 
       return {
@@ -128,9 +128,9 @@ const reducer = (
         ...state,
         isAuthenticated: false,
         isValidated: false,
-        loading: false,
         token: null,
         user: null,
+        loading: false,
       };
     case AUTH_REDUCER_ACTION_TYPE.REGISTER_FAIL:
     case AUTH_REDUCER_ACTION_TYPE.AUTH_ERROR:
@@ -139,17 +139,18 @@ const reducer = (
       localStorage.removeItem("token");
       return {
         ...state,
-        token: null,
         isAuthenticated: false,
         isValidated: false,
-        loading: false,
+        token: null,
         user: null,
         error: action?.error ?? null,
+        loading: false,
       };
     case AUTH_REDUCER_ACTION_TYPE.CLEAR_ERRORS:
       return {
         ...state,
         error: null,
+        loading: false,
       };
 
     default:
@@ -158,7 +159,7 @@ const reducer = (
 };
 
 // CONTEXT
-const useAuthContext = (initAuthState: AuthStateType) => {
+export const useAuthContext = (initAuthState: AuthStateType) => {
   const [state, dispatch] = useReducer(reducer, initAuthState);
 
   const AUTH_REDUCER_ACTIONS = useMemo(() => {

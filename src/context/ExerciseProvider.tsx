@@ -1,14 +1,17 @@
 import { createContext, ReactElement, useMemo, useReducer } from "react";
 
+import { DateTime } from "luxon";
 import {
-  SetItemType,
-  ExerciseItemType,
-  SessionItemType,
-  ExerciseNameType,
-  ExerciseItemNewValues,
-  SessionListItemType,
-  SetItemInitialValues,
-} from "./types";
+  addExerciseNameToDb,
+  cloneSessionToDb,
+  getAllExercisesFromDb,
+  getSessionFromDb,
+  getSessionsFromDb,
+  // saveExerciseToDb,
+  saveSessionsToDb,
+  saveSessionToDb,
+} from "../axios/session.axios";
+import { isCurrentExercise, isCurrentSet } from "../utilities/common";
 import {
   completed,
   getIds,
@@ -19,18 +22,15 @@ import {
   updateExerciseStartedCompleted,
   updateTheExerciseStatus,
 } from "./ExerciseProviderFunctions";
-import { isCurrentExercise, isCurrentSet } from "../utilities/common";
 import {
-  addExerciseNameToDb,
-  cloneSessionToDb,
-  getAllExercisesFromDb,
-  getSessionFromDb,
-  getSessionsFromDb,
-  // saveExerciseToDb,
-  saveSessionsToDb,
-  saveSessionToDb,
-  // saveSetToDb,
-} from "../axios/session.axios";
+  ExerciseItemNewValues,
+  ExerciseItemType,
+  ExerciseNameType,
+  SessionItemType,
+  SessionListItemType,
+  SetItemInitialValues,
+  SetItemType,
+} from "./types";
 
 type ExerciseStateType = {
   sessions: Partial<SessionItemType>[];
@@ -43,6 +43,7 @@ type ExerciseStateType = {
   currentId: string | null;
   deletePressed: string | null;
   timerVisible: boolean | null;
+  timerExpiry: string | null;
   add: boolean;
   edit: boolean;
   loading: boolean;
@@ -59,6 +60,7 @@ const initExerciseState: ExerciseStateType = {
   currentId: null,
   deletePressed: null,
   timerVisible: true,
+  timerExpiry: null,
   edit: false,
   add: false,
   loading: true,
@@ -75,6 +77,7 @@ const EXERCISE_REDUCER_ACTION_TYPE = {
   ADD_SESSION: "ADD_SESSION",
   CLONE_SESSION: "CLONE_SESSION",
   SHOW_TIMER: "SHOW_TIMER",
+  RESTART_TIMER: "RESTART_TIMER",
   UPDATE_EXERCISE: "UPDATE_EXERCISE",
   UPDATE_SET: "UPDATE_SET",
   SAVE_SESSION: "SAVE_SESSION",
@@ -194,7 +197,7 @@ const reducer = (
         throw new Error("action.payload missing in UPDATE_SESSION action");
       }
 
-      let newSessions = [payload, ...state.sessions];
+      const newSessions = [payload, ...state.sessions];
       newSessions.pop();
 
       return {
@@ -257,6 +260,23 @@ const reducer = (
         return { ...state, timerVisible: action.other, loading: false };
       }
     }
+
+    case EXERCISE_REDUCER_ACTION_TYPE.RESTART_TIMER: {
+      if (
+        action?.other === undefined ||
+        action.other === null ||
+        Array.isArray(action.other)
+      ) {
+        return { ...state, loading: false };
+      } else {
+        return {
+          ...state,
+          timerExpiry: action.other.toString(),
+          loading: false,
+        };
+      }
+    }
+
     case EXERCISE_REDUCER_ACTION_TYPE.SHOW_ADD_EXERCISE: {
       if (action?.other && Array.isArray(action.other)) {
         return {
@@ -347,7 +367,7 @@ const reducer = (
       return { ...state, currentExercise: null, loading: false };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.LINK_EXERCISE: {
-      let payload = action.payloadSession;
+      const payload = action.payloadSession;
       if (!payload || Array.isArray(payload)) {
         throw new Error("action.payload missing in REORDER_EXERCISE action");
       }
@@ -363,7 +383,7 @@ const reducer = (
     case EXERCISE_REDUCER_ACTION_TYPE.ADD_SET:
     case EXERCISE_REDUCER_ACTION_TYPE.LINK_SET:
     case EXERCISE_REDUCER_ACTION_TYPE.COMPLETE_SET: {
-      let payload = action?.payloadSession;
+      const payload = action?.payloadSession;
       if (!payload || Array.isArray(payload)) {
         throw new Error("action.payload missing in REORDER_EXERCISE action");
       }
@@ -375,11 +395,11 @@ const reducer = (
       };
     }
     case EXERCISE_REDUCER_ACTION_TYPE.START_SET: {
-      let payload = action?.payloadSession;
+      const payload = action?.payloadSession;
       if (!payload || Array.isArray(payload)) {
         throw new Error("action.payload missing in REORDER_EXERCISE action");
       }
-      let payloadSet = action?.payloadSet;
+      const payloadSet = action?.payloadSet;
       if (!payloadSet || Array.isArray(payloadSet)) {
         throw new Error("action.payloadSet missing in REORDER_EXERCISE action");
       }
@@ -483,7 +503,11 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     : null;
 
   // __________ SESSION FUNCTIONS
-  const getSessions = async (filters: any, sort: object, start?: number) => {
+  const getSessions = async (
+    filters: unknown,
+    sort: object,
+    start?: number
+  ) => {
     if (!start) start = 1;
 
     const sessions: SessionListItemType[] | null = await getSessionsFromDb(
@@ -504,11 +528,14 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     if (!sessionId) return;
     localStorage.setItem("session", sessionId);
 
-    let session: SessionItemType | null = await getSessionFromDb(sessionId);
+    const session: SessionItemType | null = await getSessionFromDb(sessionId);
     if (!session) return;
 
-    let exercises = session.exercises;
+    const exercises = session.exercises;
+
     findNextSet(exercises, 0, 0);
+
+    restartTimer(90);
 
     dispatch({
       type: EXERCISE_REDUCER_ACTIONS.SET_CURRENT_SESSION,
@@ -517,7 +544,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   };
 
   const loadLastSession = () => {
-    let lastSessionId: string | null = localStorage.getItem("session");
+    const lastSessionId: string | null = localStorage.getItem("session");
     if (lastSessionId) openSession(lastSessionId);
   };
 
@@ -534,13 +561,18 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   };
 
   const updateSession = (
-    session: SessionItemType,
+    // session: SessionItemType,
     _id: string,
     update: UpdateValueType
   ) => {
     const { name, value } = update;
-    if (!currentExists) return;
-    let updatedSession = { ...session, [name]: value };
+    if (!currentExists || !state.currentSession?._id) return;
+    // const updatedSession = { ...session, [name]: value };
+
+    const updatedSession: SessionItemType = {
+      ...state.currentSession,
+      [name]: value,
+    };
 
     dispatch({
       type: EXERCISE_REDUCER_ACTIONS.UPDATE_SESSION,
@@ -551,7 +583,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   const cloneSession = async (sessionId: string | null | undefined) => {
     if (!sessionId) return;
 
-    let clonedSession: SessionItemType | null = await cloneSessionToDb(
+    const clonedSession: SessionItemType | null = await cloneSessionToDb(
       sessionId
     );
     if (clonedSession) {
@@ -597,7 +629,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
         currentSession
       );
 
-      if (!!updateState) {
+      if (updateState) {
         dispatch({
           type: EXERCISE_REDUCER_ACTIONS.SAVE_SESSION,
           payloadSession: updSession,
@@ -610,7 +642,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   const showTimer = (initialLoad?: boolean) => {
     let showTimerOrNot = !state.timerVisible;
     if (initialLoad) {
-      let show = localStorage.getItem("timerVisible");
+      const show = localStorage.getItem("timerVisible");
       showTimerOrNot = show ? JSON.parse(show) : showTimerOrNot;
     }
     localStorage.setItem("timerVisible", JSON.stringify(showTimerOrNot));
@@ -618,6 +650,15 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     dispatch({
       type: EXERCISE_REDUCER_ACTIONS.SHOW_TIMER,
       other: showTimerOrNot,
+    });
+  };
+
+  const restartTimer = (expiryTimer: number) => {
+    const expiryDate = DateTime.local().plus({ seconds: expiryTimer });
+
+    dispatch({
+      type: EXERCISE_REDUCER_ACTIONS.RESTART_TIMER,
+      other: expiryDate.toISO().toString(),
     });
   };
 
@@ -642,7 +683,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
         : exerciseName;
 
     if (state.currentSession && state.currentSession?._id && newExerciseName) {
-      let newExercise: ExerciseItemType = {
+      const newExercise: ExerciseItemType = {
         ...ExerciseItemNewValues,
         name: newExerciseName,
         id: totalExercises,
@@ -683,7 +724,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   };
 
   const updateExercise = (
-    exercise: ExerciseItemType,
+    // exercise: ExerciseItemType,
     id: string,
     update: UpdateValueType
   ) => {
@@ -691,8 +732,9 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     const { name, value } = update;
     const { exerciseId } = getIds(id);
 
-    let updExercises: ExerciseItemType[] = [...currentSession.exercises];
-    updExercises[exerciseId] = { ...exercise, [name]: value };
+    const updExercises: ExerciseItemType[] = [...currentSession.exercises];
+    const updExercise: ExerciseItemType = updExercises[exerciseId];
+    updExercises[exerciseId] = { ...updExercise, [name]: value };
 
     const isCurrentEx: boolean = isCurrentExercise(
       state.currentExercise,
@@ -786,7 +828,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   const rateExercise = (id: string, rating: number) => {
     if (!currentSession || !currentSession?.exercises) return;
 
-    let { exerciseId } = getIds(id);
+    const { exerciseId } = getIds(id);
     rating =
       currentSession.exercises[exerciseId]?.rating === rating ? 0 : rating;
     currentSession.exercises[exerciseId].rating = rating;
@@ -803,7 +845,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     const { exerciseId } = getIds(id);
     const newPosition = direction === "up" ? exerciseId - 1 : exerciseId + 1;
 
-    let updExercise = currentSession.exercises[exerciseId];
+    const updExercise = currentSession.exercises[exerciseId];
     currentSession.exercises.splice(exerciseId, 1);
     currentSession.exercises.splice(newPosition, 0, updExercise);
     currentSession.exercises = reIndexExercises(currentSession.exercises);
@@ -818,12 +860,12 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   const completeExercisesAll = async (completeOrNot: boolean) => {
     if (!currentSession || !currentSession?.exercises) return;
 
-    let updExercises = updateAllExsStatus(
+    const updExercises = updateAllExsStatus(
       currentSession.exercises,
       completeOrNot
     );
-    findNextSet(updExercises, 0, 0);
     currentSession.exercises = updExercises;
+    findNextSet(updExercises, 0, 0);
 
     dispatch({
       type: EXERCISE_REDUCER_ACTIONS.COMPLETE_EXERCISE_ALL,
@@ -838,15 +880,18 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     const markCompleted = !exercise?.completed;
     const { exerciseId } = getIds(id);
 
-    let updExercises = [...currentSession.exercises];
+    const updExercises = [...currentSession.exercises];
     let updExercise = exercise;
 
-    let exsUpdated = updateTheExerciseStatus(updExercise, markCompleted);
+    const exsUpdated = updateTheExerciseStatus(updExercise, markCompleted);
     updExercise = !exsUpdated ? exercise : exsUpdated;
     updExercises[exerciseId] = updExercise;
 
-    findNextSet(updExercises, exerciseId, 0);
     currentSession.exercises = updExercises;
+
+    findNextSet(updExercises, exerciseId, 0);
+
+    restartTimer(90);
 
     dispatch({
       type: EXERCISE_REDUCER_ACTIONS.COMPLETE_EXERCISE,
@@ -899,7 +944,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   //   await saveSetToDb(sessionId, exerciseId, setId, set);
   // };
 
-  const updateSet = (set: SetItemType, id: string, update: UpdateValueType) => {
+  const updateSet = (id: string, update: UpdateValueType) => {
     if (!state.currentSession || !state.currentSession?.exercises) return;
     const currentSession: SessionItemType = { ...state.currentSession };
 
@@ -915,10 +960,11 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     // const set = action.payloadSet;
     const { name, value } = update;
 
-    let updExercises: ExerciseItemType[] = [...currentSession.exercises];
+    const updExercises: ExerciseItemType[] = [...currentSession.exercises];
+    const set: SetItemType = { ...updExercises[exerciseId].sets[setId] };
     updExercises[exerciseId].sets[setId] = { ...set, [name]: value };
 
-    let updatedSet: SetItemType = updExercises[exerciseId].sets[setId];
+    const updatedSet: SetItemType = updExercises[exerciseId].sets[setId];
     const isTheCurrentExercise = isCurrentExercise(
       state.currentExercise,
       exerciseId
@@ -941,15 +987,15 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     if (!state.currentSession || !state.currentSession?.exercises) return;
     const currentSession: SessionItemType = { ...state.currentSession };
 
-    let { exerciseId } = getIds(id);
+    const { exerciseId } = getIds(id);
     let updExercise = exercise;
 
-    let noOfSets = updExercise.sets.length;
+    const noOfSets = updExercise.sets.length;
     if (noOfSets < 1) {
       updExercise.sets = [{ ...SetItemInitialValues }];
     } else {
-      let setToCopy = updExercise.sets[noOfSets - 1];
-      let newSet = {
+      const setToCopy = updExercise.sets[noOfSets - 1];
+      const newSet = {
         ...setToCopy,
         completed: false,
         completedWhen: null,
@@ -967,6 +1013,8 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
       exerciseId,
       noOfSets < 0 ? 0 : noOfSets
     );
+
+    restartTimer(90);
 
     // update overall exercise to completed as well
     updExercise = updateExerciseStartedCompleted("completed", updExercise);
@@ -1064,9 +1112,9 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     const find: string = started.text;
     const currentValue = set?.[find];
 
-    let updExercises = [...currentSession.exercises];
+    const updExercises = [...currentSession.exercises];
     let updExercise = updExercises[exerciseId];
-    let updSet = {
+    const updSet = {
       ...set,
       [find]: currentValue ? false : true,
       [`${find}When`]: currentValue ? null : new Date(),
@@ -1111,10 +1159,11 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
 
     // update overall exercise to completed as well
     updExercise = updateExerciseStartedCompleted(find, updExercise);
-
     currentSession.exercises[exerciseId] = updExercise;
 
     findNextSet(currentSession.exercises, exerciseId, setId);
+
+    restartTimer(90);
 
     dispatch({
       type: EXERCISE_REDUCER_ACTIONS.COMPLETE_SET,
@@ -1131,8 +1180,8 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     const { exerciseId, setId } = getIds(id);
 
     if (setId !== undefined && setId !== null) {
-      let updExercises: ExerciseItemType[] = [...currentSession.exercises];
-      let updSet: SetItemType = updExercises[exerciseId].sets[setId];
+      const updExercises: ExerciseItemType[] = [...currentSession.exercises];
+      const updSet: SetItemType = updExercises[exerciseId].sets[setId];
       updSet.link = set?.link ? false : true;
       updExercises[exerciseId].sets[setId] = updSet;
       currentSession.exercises = updExercises;
@@ -1151,7 +1200,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
 
   const isExerciseCompleted = (exercise: ExerciseItemType) => {
     if (!exercise?.sets?.length) return false;
-    let setsNotDone = exercise.sets.filter(
+    const setsNotDone = exercise.sets.filter(
       (set: SetItemType) => !set?.completed
     );
     return setsNotDone?.length ? false : true;
@@ -1178,6 +1227,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     saveCurrentSession,
     saveSessions,
     showTimer,
+    restartTimer,
     setExercises,
     clearExercises,
     setCurrentExercise,
@@ -1207,6 +1257,7 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     currentId: state.currentId,
     deletePressed: state.deletePressed,
     timerVisible: state.timerVisible,
+    timerExpiry: state.timerExpiry,
     edit: state.edit,
     add: state.add,
   };
@@ -1223,6 +1274,7 @@ const initExerciseContextState: UseExerciseContextType = {
   updateSession: () => {},
   cloneSession: async () => {},
   showTimer: () => {},
+  restartTimer: () => {},
   addExercise: async () => {},
   showAddExercise: async () => {},
   deleteExercise: () => {},
@@ -1261,6 +1313,7 @@ const initExerciseContextState: UseExerciseContextType = {
   exercisesAll: [],
   deletePressed: null,
   timerVisible: true,
+  timerExpiry: null,
 };
 
 export const ExerciseContext = createContext<UseExerciseContextType>(
