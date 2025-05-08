@@ -88,28 +88,28 @@ const Timer = ({ timerDuration = 90, set, setId }: TimerProps) => {
       <Container className="p-1 m-1">
         <Row className="m-0 p-0 align-items-middle">
           <Col className="col-4 text-end">
-            <Button
-              className="btn btn-sm  h-100 w-100"
-              onClick={() => startTheSet()}
-            >
+            <button className="btn btn-sm  h-100 w-100" onClick={startTheSet}>
               Start
-            </Button>
+            </button>
           </Col>
           <Col className="col-4 text-center m-0 p-0">
             <Container className="w-100 m-0 p-0">
               <Row>
-                <Col className="text-center" style={{ fontSize: "2.5rem" }}>
+                <Col
+                  role="cell"
+                  aria-label="Timer"
+                  className="text-center"
+                  style={{ fontSize: "2.5rem" }}
+                >
                   {padTimes(minutes)}:{padTimes(seconds)}
                 </Col>
               </Row>
               <Row className="text-center">
                 <Col>
                   <Button className="btn btn-sm" onClick={() => pause()}>
-                    {/* Pause */}
                     <Icon icon="pause" />
                   </Button>
                   <Button className="btn btn-sm" onClick={() => resume()}>
-                    {/* Resume */}
                     <Icon icon="play_arrow" />
                   </Button>
                   <Button

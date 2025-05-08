@@ -1,4 +1,10 @@
-import { createContext, ReactElement, useMemo, useReducer } from "react";
+import {
+  createContext,
+  PropsWithChildren,
+  ReactElement,
+  useMemo,
+  useReducer,
+} from "react";
 import { v4 as uuid } from "uuid";
 
 import { AlertItemType } from "./types";
@@ -110,9 +116,11 @@ export const AlertContext = createContext<UseAlertContextType>(
   initAlertContextState
 );
 
-type ChildrenType = { children?: ReactElement | ReactElement[] };
+// type ChildrenType = { children?: ReactElement | ReactElement[] };
 
-export const AlertProvider = ({ children }: ChildrenType): ReactElement => {
+export const AlertProvider = ({
+  children,
+}: PropsWithChildren): ReactElement => {
   return (
     <AlertContext.Provider value={useAlertContext(initAlertState)}>
       {children}

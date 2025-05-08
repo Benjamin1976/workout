@@ -8,6 +8,11 @@ import {
   SetItemType,
 } from "../context/types";
 
+export const createSetId = (e: ExerciseItemType, s: SetItemType): string => {
+  if (!e || !s) return "";
+  return ["exercise", e.order, "set", s.order].join(".");
+};
+
 export type ConfigJSONType = {
   headers: {
     "Content-Type": string;
@@ -327,6 +332,8 @@ export const emojiIcons = [
   { label: "grinning", icon: "😀", value: 4 },
   { label: "flexed", icon: "💪", value: 5 },
 ];
+
+export const getLabelText = (id: string) => id.split(".");
 
 export const getEmojiIcon = (value: number): string => {
   return emojiIcons.filter((icon) => icon.value === value)[0].icon;

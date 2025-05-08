@@ -18,6 +18,7 @@ const TextInput = ({
 }: TextInputProps) => {
   const { title, field } = fieldOptions;
   const key = [id, field].join(".");
+  const fieldName = [id, field].join(".");
 
   value = value ? value.toString() : "";
 
@@ -26,19 +27,17 @@ const TextInput = ({
   return (
     <div>
       {title && (
-        <label
-          key={key + ".label"}
-          htmlFor="textFormControl"
-          className="form-label"
-        >
+        <label key={key + ".label"} htmlFor={fieldName} className="form-label">
           {title}
         </label>
       )}
       <input
-        id="textFormControl"
+        aria-label={fieldName}
+        name={fieldName}
+        id={fieldName}
         className="form-control"
+        placeholder={title}
         value={value}
-        name={id}
         key={id}
         type="text"
         // onBlur={(e) => onBlurTest(e)}

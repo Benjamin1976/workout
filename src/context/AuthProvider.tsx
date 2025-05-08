@@ -1,7 +1,10 @@
-import { createContext, ReactElement, useMemo, useReducer } from "react";
-import { AuthItemType, UserType } from "./types";
-import setAuthToken from "../utilities/setAuthToken";
-import { configJSON, dbMsg, dbMsgLarge } from "../utilities/common";
+import {
+  createContext,
+  PropsWithChildren,
+  ReactElement,
+  useMemo,
+  useReducer,
+} from "react";
 import {
   loadUserAxios,
   loginAxios,
@@ -9,14 +12,17 @@ import {
   registerAxios,
   sendValidationEmailAxios,
   SendValidationEmailType,
+  TokenType,
   validateUserCode,
 } from "../axios/auth.axios";
-import { TokenType } from "../axios/auth.axios";
+import { configJSON, dbMsg, dbMsgLarge } from "../utilities/common";
+import setAuthToken from "../utilities/setAuthToken";
+import { AuthItemType, UserType } from "./types";
 
 // import { AxiosResponse } from "axios";
 
-let DBL = 0;
-let dp = "context.auth";
+const DBL = 0;
+const dp = "context.auth";
 
 // Register User
 export type LoginDetailsType = {
@@ -167,7 +173,7 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
   }, []);
 
   const validateUser = (user: UserType, code: string) => {
-    let lm = dp + ".validateUser: ";
+    const lm = dp + ".validateUser: ";
     dbMsg(1, DBL, lm + "Starting");
 
     // try registering user with form data and json config
@@ -185,16 +191,16 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
         dbMsgLarge(1, DBL, lm + "User Validation result:-", token);
         loadUser();
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         dispatch({
           type: AUTH_REDUCER_ACTIONS.AUTH_ERROR,
-          error: err.msg,
+          error: err.message,
         });
       });
   };
 
   const sendValidationEmail = async (user: UserType) => {
-    let lm = dp + ".sendValidationEmail: ";
+    const lm = dp + ".sendValidationEmail: ";
 
     dbMsg(1, DBL, lm + "Starting");
     sendValidationEmailAxios(user, configJSON)
@@ -203,17 +209,17 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
         console.log(emailResult);
         dbMsg(1, DBL, lm + "Validating code with API");
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         dispatch({
           type: AUTH_REDUCER_ACTIONS.AUTH_ERROR,
-          payload: err,
+          error: err.message,
         });
       });
   };
 
   // Login User
   const login = async (loginData: LoginType) => {
-    let lm = dp + ".login: ";
+    const lm = dp + ".login: ";
 
     // try registering user with form data and json config
     dbMsg(1, DBL, lm + "Starting login");
@@ -240,8 +246,8 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
           loadUser();
         }
       })
-      .catch((err: any) => {
-        let errMsg = getError(err);
+      .catch((err: Error) => {
+        const errMsg = getError(err);
         dbMsgLarge(1, DBL, lm + "Error:-", errMsg);
         dbMsg(1, DBL, lm + "Finish");
         dispatch({
@@ -253,7 +259,7 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
 
   // Load User
   const loadUser = async () => {
-    let lm = dp + ".loadUser: ";
+    const lm = dp + ".loadUser: ";
 
     dbMsg(1, DBL, lm + "Starting");
 
@@ -282,7 +288,7 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
         });
         dbMsg(1, DBL, lm + "Finish");
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         dbMsgLarge(1, DBL, lm + "Error:-", err.toString());
         dbMsg(1, DBL, lm + "Finish");
         dispatch({ type: AUTH_REDUCER_ACTIONS.AUTH_ERROR });
@@ -301,29 +307,39 @@ export const useAuthContext = (initAuthState: AuthStateType) => {
 
         loadUser();
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         // remove token from storage and mark as not authenticated
         //   and some other stuff
         dispatch({
           type: AUTH_REDUCER_ACTIONS.REGISTER_FAIL,
-          payload: err.msg,
+          error: err.message,
         });
       });
   };
 
+  // type ErrorResponse = {
+  //   response?: {data: string}
+  //   request?: {response: string}
+  // }
+
+  // type ErrorTypes = {
+  //   error: Error | ErrorResponse
+  // }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getError = (error: any) => {
     let data;
     let status = 500;
-    if (error.response) {
+
+    if (error?.message) {
+      data = error.message;
+    } else if (error?.response) {
       // status code out of the range of 2xx
       data = error.response.data;
       status = error.response.data;
     } else if (error.request) {
       // The request was made but no response was received
       data = JSON.parse(error.request.response);
-    } else {
-      // Error on setting up the request
-      data = error.message;
     }
     return { status, data };
   };
@@ -376,9 +392,9 @@ const initAuthContextState: UseAuthContextType = {
 export const AuthContext =
   createContext<UseAuthContextType>(initAuthContextState);
 
-type ChildrenType = { children?: ReactElement | ReactElement[] };
+// type ChildrenType = { children?: ReactElement | ReactElement[] };
 
-export const AuthProvider = ({ children }: ChildrenType): ReactElement => {
+export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
   return (
     <AuthContext.Provider value={useAuthContext(initAuthState)}>
       {children}

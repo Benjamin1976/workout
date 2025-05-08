@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 
 import useExercise from "../../hooks/useExercise";
-import { ExerciseItemType, SetItemType } from "../../context/types";
 
-import SetItem from "../set/SetItem";
-import Timer from "../common/Timer";
+import { createSetId } from "../../utilities/common";
 import Spinner from "../common/Spinner";
+import Timer from "../common/Timer";
+import SetItem from "../set/SetItem";
 
 type ExerciseHighlightProps = {
   exercisesCompleted: boolean;
@@ -28,7 +28,11 @@ const ExerciseHighlight = ({ exercisesCompleted }: ExerciseHighlightProps) => {
   if (exercisesCompleted)
     return (
       <div className={`border border-2 border-${bgColor} px-2 mb-2`}>
-        <Row className={`bg-${bgColor} p-0 text-${textColor}`}>
+        <Row
+          className={`bg-${bgColor} p-0 text-${textColor}`}
+          aria-label={"ExerciseHighlight"}
+          role="row"
+        >
           <Col className="py-1 mt-1 h6 text-center">
             {"All Exercises Completed"}
           </Col>
@@ -49,7 +53,11 @@ const ExerciseHighlight = ({ exercisesCompleted }: ExerciseHighlightProps) => {
   if (!currentExercise || !currentSet)
     return (
       <div className={`border border-2 border-${bgColor} px-2 mb-2`}>
-        <Row className={`bg-${bgColor} p-0 text-${textColor}`}>
+        <Row
+          className={`bg-${bgColor} p-0 text-${textColor}`}
+          aria-label={"ExerciseHighlight"}
+          role="row"
+        >
           <Col className="py-1 mt-1 h6 text-center">&nbsp;</Col>
         </Row>
         <Row>
@@ -61,15 +69,15 @@ const ExerciseHighlight = ({ exercisesCompleted }: ExerciseHighlightProps) => {
       </div>
     );
 
-  const createSetId = (e: ExerciseItemType, s: SetItemType): string => {
-    if (!e || !s) return "";
-    return ["exercise", e.order, "set", s.order].join(".");
-  };
   const setId = createSetId(currentExercise, currentSet);
 
   return (
     <div className={`border border-2 border-${bgColor} px-2 mb-2`}>
-      <Row className={`bg-${bgColor} p-0 text-${textColor}`}>
+      <Row
+        className={`bg-${bgColor} p-0 text-${textColor}`}
+        aria-label={"ExerciseHighlight"}
+        role="row"
+      >
         <Col className="py-1 mt-1 h6 text-center">
           {currentExercise?.name?.name ?? "Name"}
         </Col>

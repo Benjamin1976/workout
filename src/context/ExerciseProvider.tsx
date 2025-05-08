@@ -1,6 +1,12 @@
-import { createContext, ReactElement, useMemo, useReducer } from "react";
-
 import { DateTime } from "luxon";
+import {
+  createContext,
+  PropsWithChildren,
+  ReactElement,
+  useMemo,
+  useReducer,
+} from "react";
+
 import {
   addExerciseNameToDb,
   cloneSessionToDb,
@@ -133,7 +139,7 @@ export type ExerciseReducerAction = {
   update?: UpdateValueType;
 };
 
-const reducer = (
+export const reducer = (
   state: ExerciseStateType,
   action: ExerciseReducerAction
 ): ExerciseStateType => {
@@ -485,7 +491,7 @@ const reducer = (
 };
 
 // CONTEXT
-const useExerciseContext = (initExerciseState: ExerciseStateType) => {
+export const useExerciseContext = (initExerciseState: ExerciseStateType) => {
   const [state, dispatch] = useReducer(reducer, initExerciseState);
 
   const EXERCISE_REDUCER_ACTIONS = useMemo(() => {
@@ -1245,6 +1251,9 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     startSet,
     completeSet,
     findNextSet,
+    loading: state.loading,
+    edit: state.edit,
+    add: state.add,
     totalSessions,
     totalExercises,
     exercisesCompleted,
@@ -1258,14 +1267,12 @@ const useExerciseContext = (initExerciseState: ExerciseStateType) => {
     deletePressed: state.deletePressed,
     timerVisible: state.timerVisible,
     timerExpiry: state.timerExpiry,
-    edit: state.edit,
-    add: state.add,
   };
 };
 
 export type UseExerciseContextType = ReturnType<typeof useExerciseContext>;
 
-const initExerciseContextState: UseExerciseContextType = {
+export const initExerciseContextState: UseExerciseContextType = {
   getSessions: async () => {},
   openSession: async () => {},
   loadLastSession: () => {},
@@ -1299,6 +1306,7 @@ const initExerciseContextState: UseExerciseContextType = {
   startSet: async () => {},
   completeSet: async () => {},
   findNextSet: () => {},
+  loading: true,
   edit: false,
   add: false,
   totalSessions: 0,
@@ -1320,9 +1328,11 @@ export const ExerciseContext = createContext<UseExerciseContextType>(
   initExerciseContextState
 );
 
-type ChildrenType = { children?: ReactElement | ReactElement[] };
+// type ChildrenType = { children?: ReactElement | ReactElement[] };
 
-export const ExerciseProvider = ({ children }: ChildrenType): ReactElement => {
+export const ExerciseProvider = ({
+  children,
+}: PropsWithChildren): ReactElement => {
   return (
     <ExerciseContext.Provider value={useExerciseContext(initExerciseState)}>
       {children}

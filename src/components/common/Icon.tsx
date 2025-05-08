@@ -7,6 +7,7 @@ const Icon = ({ icon }: IconProps) => {
     <span
       className="material-symbols-outlined"
       style={{ fontSize: "1.1rem", borderWidth: "0px" }}
+      aria-label={icon}
     >
       {icon}
     </span>

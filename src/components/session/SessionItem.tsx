@@ -1,20 +1,17 @@
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import { sessionFlds, SessionItemType } from "../../context/types";
 
 import useExercise from "../../hooks/useExercise";
 
-import Icon from "../common/Icon";
 import ExerciseAdd from "../exercise/ExerciseAdd";
 import ExerciseHighlight from "../exercise/ExerciseHighlight";
 import ExerciseList from "../exercise/ExerciseList";
 
 import { useEffect } from "react";
-import {
-  completedButtonClass,
-  completedTextClass,
-} from "../../utilities/common";
 import DateInput from "../common/DateInput";
 import TextInput from "../common/TextInput";
+import { ExerciseListButtons } from "./ExerciseListButtons";
+import { SessionButtons } from "./SessionItemButtons";
 
 type SessionItemHeaderProps = {
   session: SessionItemType;
@@ -26,14 +23,8 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
     timerVisible,
     totalExercises,
     exercisesCompleted,
-    showAddExercise,
-    editSession,
     updateSession,
-    saveCurrentSession,
-    closeSession,
     showTimer,
-    showHideExerciseAll,
-    completeExercisesAll,
   } = useExercise();
 
   useEffect(() => {
@@ -42,17 +33,19 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
   }, []);
 
   const allCompleted = totalExercises === exercisesCompleted;
-  const buttonClass = completedButtonClass(false);
-  const textClass = completedTextClass(false);
 
   return (
     <>
       <Container className="container-fluid">
-        <Row>
+        <Row role="row" aria-label={["SessionItem", session._id].join(".")}>
           <Col className="col-12 p-0 m-0">
             <div className="d-flex flex-column vh-100 overflow-hidden">
               <Row className="align-items-center mb-1 pe-1">
-                <Col className="col-3">
+                <Col
+                  className="col-3"
+                  role="cell"
+                  aria-label={[session._id, "date"].join(".")}
+                >
                   <DateInput
                     edit={edit}
                     value={session.date.toString()}
@@ -61,7 +54,11 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
                     onchange={updateSession}
                   />
                 </Col>
-                <Col className="col-5">
+                <Col
+                  className="col-5"
+                  role="cell"
+                  aria-label={[session._id, "name"].join(".")}
+                >
                   <TextInput
                     edit={edit}
                     value={session.name}
@@ -72,36 +69,11 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
                   {!edit && <span>({totalExercises})</span>}
                 </Col>
                 <Col className="col-4 text-end">
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showTimer()}
-                  >
-                    <Icon icon={"fitness_center"} />
-                  </Button>
-                  {edit && (
-                    <Button
-                      className={buttonClass + textClass}
-                      onClick={() => saveCurrentSession(session)}
-                    >
-                      <Icon icon={"save"} />
-                    </Button>
-                  )}
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => editSession()}
-                  >
-                    <Icon icon={!edit ? "edit" : "close"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => closeSession()}
-                  >
-                    <Icon icon={"arrow_back"} />
-                  </Button>
+                  <SessionButtons session={session} />
                 </Col>
               </Row>
               {timerVisible === undefined ||
-              timerVisible === undefined ||
+              timerVisible === null ||
               !timerVisible ? (
                 ""
               ) : (
@@ -115,31 +87,7 @@ const SessionItem = ({ session }: SessionItemHeaderProps) => {
                   Exercises
                 </Col>
                 <Col className="col-6 text-end" style={{ fontWeight: "bold" }}>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => completeExercisesAll(!allCompleted)}
-                  >
-                    <Icon icon={allCompleted ? "check_circle" : "pending"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showAddExercise()}
-                  >
-                    <Icon icon={"add"} />
-                  </Button>
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showHideExerciseAll(true)}
-                  >
-                    <Icon icon={"visibility"} />
-                  </Button>
-
-                  <Button
-                    className={buttonClass + textClass}
-                    onClick={() => showHideExerciseAll(false)}
-                  >
-                    <Icon icon={"visibility_off"} />
-                  </Button>
+                  <ExerciseListButtons />
                 </Col>
               </Row>
               <div className="h-100 scrollable overflow-auto">

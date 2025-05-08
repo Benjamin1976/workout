@@ -4,7 +4,7 @@ import {
   UseExerciseContextType,
 } from "../context/ExerciseProvider";
 
-const useExercise = (): UseExerciseContextType => {
+export const useExercise = (): UseExerciseContextType => {
   return useContext(ExerciseContext);
 };
 

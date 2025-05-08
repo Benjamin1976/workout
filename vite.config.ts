@@ -1,11 +1,6 @@
-/// <reference types="vitest" />
-
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-// import dns from "node:dns";
-
-// dns.setDefaultResultOrder("verbatim");
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -20,11 +15,5 @@ export default defineConfig({
         ws: true,
       },
     },
-  },
-  test: {
-    globals: true,
-    environment: "jsdom",
-    setupFiles: ["vitest-localstorage-mock", "./vitest.setup.ts"],
-    mockReset: false,
   },
 });

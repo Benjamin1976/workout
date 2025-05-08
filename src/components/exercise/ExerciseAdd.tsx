@@ -10,11 +10,11 @@ import {
   Row,
 } from "react-bootstrap";
 
-import useExercise from "../../hooks/useExercise";
 import {
   ExerciseNameInitialValues,
   ExerciseNameType,
 } from "../../context/types";
+import useExercise from "../../hooks/useExercise";
 
 import ExerciseDropDown from "./ExerciseDropDown";
 
@@ -43,7 +43,7 @@ const ExerciseAdd = () => {
         <OffcanvasTitle>Add Exercise</OffcanvasTitle>
       </OffcanvasHeader>
       <OffcanvasBody>
-        <Row>
+        <Row aria-label="AddExercise" role="row">
           <Col>
             <InputGroup>
               <ExerciseDropDown updateName={updateName} />

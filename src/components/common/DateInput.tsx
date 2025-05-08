@@ -19,6 +19,7 @@ const DateInput = ({
 }: DateInputProps) => {
   const { title, field } = fieldOptions;
   const key = [id, field].join(".");
+  const fieldName = [id, field].join(".");
 
   if (!edit) return !value ? "" : dateFormat(value);
 
@@ -36,7 +37,10 @@ const DateInput = ({
       <input
         id="dateFormControl"
         className="form-control"
+        aria-label={fieldName}
+        data-testid={fieldName}
         value={value === "" ? value : dateFormatCtl(value)}
+        placeholder={title}
         name={id}
         key={id}
         type="Date"
