@@ -88,7 +88,10 @@ const Timer = ({ timerDuration = 90, set, setId }: TimerProps) => {
       <Container className="p-1 m-1">
         <Row className="m-0 p-0 align-items-middle">
           <Col className="col-4 text-end">
-            <button className="btn btn-sm  h-100 w-100" onClick={startTheSet}>
+            <button
+              className="btn btn-sm btn-primary h-100 w-100"
+              onClick={startTheSet}
+            >
               Start
             </button>
           </Col>
